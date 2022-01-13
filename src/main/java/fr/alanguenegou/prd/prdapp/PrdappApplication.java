@@ -12,10 +12,15 @@ public class PrdappApplication {
     public static void main(String[] args) {
         SpringApplication.run(PrdappApplication.class, args);
 
+        // connects to GraphDataSource and populates the Graph object
         GraphDataAccess graphDataAccess = new GraphDataAccess();
+        graphDataAccess.populateGraph();
+
+        // TODO faire la partie UserData
         UserDataDataAccess userDataDataAccess = new UserDataDataAccess();
-        graphDataAccess.printNumOfRows();
-        userDataDataAccess.printNumOfRows();
+
+        //graphDataAccess.printNumOfRows();
+        //userDataDataAccess.printNumOfRows();
     }
 
 }
