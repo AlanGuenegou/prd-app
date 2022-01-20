@@ -2,6 +2,8 @@ package fr.alanguenegou.prd.prdapp;
 
 import fr.alanguenegou.prd.prdapp.dbaccess.GraphDataAccess;
 import fr.alanguenegou.prd.prdapp.dbaccess.UserDataDataAccess;
+import fr.alanguenegou.prd.prdapp.graph.Graph;
+import fr.alanguenegou.prd.prdapp.userdata.UserData;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
@@ -12,15 +14,15 @@ public class PrdappApplication {
     public static void main(String[] args) {
         SpringApplication.run(PrdappApplication.class, args);
 
-        // connects to GraphDataSource and populates the Graph object
+        // connects to GraphDataSource and populates the graph object
         GraphDataAccess graphDataAccess = new GraphDataAccess();
-        graphDataAccess.populateGraph();
+        Graph graph = graphDataAccess.populateGraph();
 
-        // TODO faire la partie UserData
+
+        // connects to UserDataDataSource and populates the userData object
         UserDataDataAccess userDataDataAccess = new UserDataDataAccess();
+        UserData userData = userDataDataAccess.populateUserData(graph);
 
-        //graphDataAccess.printNumOfRows();
-        //userDataDataAccess.printNumOfRows();
     }
 
 }

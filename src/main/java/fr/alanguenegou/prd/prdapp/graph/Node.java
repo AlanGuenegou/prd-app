@@ -17,22 +17,26 @@ public class Node {
      * distance from source node initialized to infinite positive value
      */
     @Getter @Setter
-    private Integer distance = Integer.MAX_VALUE;
+    private Double distance = Double.MAX_VALUE;
 
     @Getter @Setter
-    Map<Node, Pair<Integer, Integer>> adjacentNodes = new HashMap<>();
+    Map<Node, Pair<Double, Double>> adjacentNodes = new HashMap<>();
 
     /**
-     *
-     * @param destination noeud voisin
-     * @param distance distance avec le noeud voisin
-     * @param securite valeur de sécurité sur le tronçon vers le noeud voisin
+     * adds a neighbour node to this node
+     * @param destination neighbour node
+     * @param distance distance from this node to the neighbour node
+     * @param danger danger value on the section between this node and the neighbour node
      */
-    public void addNeighbour(Node destination, Integer distance, Integer securite) {
-        Pair<Integer, Integer> pair = Pair.with(distance, securite);
+    public void addNeighbour(Node destination, Double distance, Double danger) {
+        Pair<Double, Double> pair = Pair.with(distance, danger);
         adjacentNodes.put(destination, pair);
     }
 
+    /**
+     * constructor of a node with a specific id
+     * @param id id of the new node
+     */
     public Node(int id) {
         this.id = id;
     }

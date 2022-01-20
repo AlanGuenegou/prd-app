@@ -17,6 +17,9 @@ public class GraphDataAccess {
 
     private final JdbcTemplate jdbcTemplate;
 
+    /**
+     * constructor of GraphDataAccess witch connexion to graph data source and initialization of a jdbcTemplate
+     */
     public GraphDataAccess() {
         DriverManagerDataSource ds = new DriverManagerDataSource();
         ds.setDriverClassName("org.postgresql.Driver");
@@ -26,6 +29,9 @@ public class GraphDataAccess {
         this.jdbcTemplate = new JdbcTemplate(ds);
     }
 
+    /**
+     * prints number of rows in the graph data source
+     */
     public void printNumOfRows() {
 
         var sql = "SELECT COUNT(*) FROM link_geometry_areaid_7_amenagement";
@@ -41,56 +47,114 @@ public class GraphDataAccess {
 
     }
 
-    public Integer getDangerValue(String layout) {
-        int result;
+    /**
+     * computes danger value from layout type and section length
+     * @param layout layout type of the section
+     * @param length length of the section
+     * @return danger value
+     */
+    public Double getDangerValue(String layout, Double length) {
+        int coefficient;
         switch (layout) {
-            case "test":
-                result = 5;
+            case "Autres_chemins_piéton_autorisé_aux_vélos-1x":
+            case "Autres_chemins_piéton_autorisé_aux_vélos-2x":
+            case "Bandes_cyclables-1xD":
+            case "Bandes_cyclables-1xG":
+            case "Bandes_cyclables-2x":
+            case "Bandes_cyclables-2xG":
+            case "Footway_path_designated-1x":
+            case "Footway_path_designated-2x":
+            case "footway_permissive-1x":
+            case "footway_permissive-2x":
+            case "Trottoirs_cyclables-1x":
+            case "Trottoirs_cyclables-2x":
+            case "Voies_bus-1xD":
+            case "Voies_bus-1xG":
+            case "Voies_bus-2x":
+            case "Zones_rencontre-1x":
+            case "Zones_rencontre-2x":
+                coefficient = 3;
                 break;
-            case "test2":
-                result = 6;
+
+            case "chaucidou":
+            case "Cheminements_cyclables-1xD":
+            case "Cheminements_cyclables-2x":
+            case "Doubles-sens_cyclables_en_bande-G":
+            case "Limite_a_30-1x":
+            case "Limite_a_30-2x":
+            case "Pedestrian_1x":
+            case "Pedestrian_2x":
+            case "Routes_services_chemins_agricoles-2x":
+            case "Zones_30-1x":
+            case "Zones_30-2x":
+                coefficient = 2;
                 break;
+
+            case "Double-sens_cyclables_sans_bande":
+            case "escalier-2x":
+            case "":
+                coefficient = 1;
+                break;
+
+            case "Pistes_cyclables-1xD":
+            case "Pistes_cyclables-2x":
+            case "Pistes_cyclables-2xD":
+            case "Pistes_cyclables-2xG":
+            case "Pistes_sur_Trottoirs-1x":
+            case "Pistes_sur_Trottoirs-2x":
+            case "Voies_vertes-1x":
+            case "Voies_vertes-2x":
+                coefficient = 5;
+                break;
+
             default:
                 log.error("Le type d'aménagement n'est pas reconnu");
-                result = Integer.MAX_VALUE;
+                coefficient = Integer.MAX_VALUE;
                 break;
         }
-        return result;
+        return length/coefficient;
     }
 
-    public void populateGraph() {
+    /**
+     * populates a new graph object according to graphDataSource
+     * @return the graph freshly populated
+     */
+    public Graph populateGraph() {
         Graph graph = new Graph();
 
-        var sql = "SELECT *, st_length(geometry) FROM link_geometry_areaid_7_amenagement";
+        // geometry field is cast in geography to have length in meter and not in degree
+        // TODO vérifier qu'effectivement c'est initialement rendu en degré
+        //  et j'ai besoin de cast en geography pour avoir des mètres (demander à Mr Sauvanet ?)
+        var sql = "SELECT *, st_length(geometry::geography) FROM link_geometry_areaid_7_amenagement";
         List<Map<String, Object>> rows = jdbcTemplate.queryForList(sql);
 
         // iterates through all rows of graphDataSource
         for (Map<String, Object> row : rows) {
 
+            Double length = (Double)row.get("st_length");
+
             // checks if nodeStart is already in graph. If not, adds it
-            int nodeStart = (int)row.get("node_start");
+            Integer nodeStart = (Integer) row.get("node_start");
             if (graph.isNotInGraph(nodeStart)){
                 graph.addNode(nodeStart);
             }
 
             // checks if nodeEnd is already in graph. If not, adds it
-            int nodeEnd = (int)row.get("node_end");
+            Integer nodeEnd = (Integer) row.get("node_end");
             if (graph.isNotInGraph(nodeEnd)){
                 graph.addNode(nodeEnd);
             }
 
-            // converts amenagement string into security value
-            Integer security = getDangerValue((String)row.get("amenagement"));
+            // populates sections Map
+            graph.addSection(nodeStart, nodeEnd, (Integer) row.get("routelink_id"));
 
+            // converts amenagement string into danger value
+            Double danger = getDangerValue((String)row.get("amenagement"), length);
 
-            // TODO vérifier quelle unité est le st_length (en km ? miles ?)
-            // adds NodeEnd as nodeStart neighbour with proper distance and security
-            // TODO implémenter système de CL sécurité + distance
+            // adds NodeEnd as nodeStart neighbour with proper distance and danger
             graph.getNodes().get(nodeStart).addNeighbour(
-                    graph.getNodes().get(nodeEnd),
-                    (int)row.get("st_length"),
-                    security);
+                    graph.getNodes().get(nodeEnd), length, danger);
         }
-
+        return graph;
     }
 }
