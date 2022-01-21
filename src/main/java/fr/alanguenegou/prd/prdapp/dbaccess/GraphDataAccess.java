@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
+import org.springframework.util.StopWatch;
 
 import java.util.List;
 import java.util.Map;
@@ -55,62 +56,66 @@ public class GraphDataAccess {
      */
     public Double getDangerValue(String layout, Double length) {
         int coefficient;
-        switch (layout) {
-            case "Autres_chemins_piéton_autorisé_aux_vélos-1x":
-            case "Autres_chemins_piéton_autorisé_aux_vélos-2x":
-            case "Bandes_cyclables-1xD":
-            case "Bandes_cyclables-1xG":
-            case "Bandes_cyclables-2x":
-            case "Bandes_cyclables-2xG":
-            case "Footway_path_designated-1x":
-            case "Footway_path_designated-2x":
-            case "footway_permissive-1x":
-            case "footway_permissive-2x":
-            case "Trottoirs_cyclables-1x":
-            case "Trottoirs_cyclables-2x":
-            case "Voies_bus-1xD":
-            case "Voies_bus-1xG":
-            case "Voies_bus-2x":
-            case "Zones_rencontre-1x":
-            case "Zones_rencontre-2x":
-                coefficient = 3;
-                break;
+        if (layout == null) {
+            coefficient = 1;
+        }
+        else {
+            switch (layout) {
+                case "Autres_chemins_piéton_autorisé_aux_vélos-1x":
+                case "Autres_chemins_piéton_autorisé_aux_vélos-2x":
+                case "Bandes_cyclables-1xD":
+                case "Bandes_cyclables-1xG":
+                case "Bandes_cyclables-2x":
+                case "Bandes_cyclables-2xG":
+                case "Footway_path_designated-1x":
+                case "Footway_path_designated-2x":
+                case "footway_permissive-1x":
+                case "footway_permissive-2x":
+                case "Trottoirs_cyclables-1x":
+                case "Trottoirs_cyclables-2x":
+                case "Voies_bus-1xD":
+                case "Voies_bus-1xG":
+                case "Voies_bus-2x":
+                case "Zones_rencontre-1x":
+                case "Zones_rencontre-2x":
+                    coefficient = 3;
+                    break;
 
-            case "chaucidou":
-            case "Cheminements_cyclables-1xD":
-            case "Cheminements_cyclables-2x":
-            case "Doubles-sens_cyclables_en_bande-G":
-            case "Limite_a_30-1x":
-            case "Limite_a_30-2x":
-            case "Pedestrian_1x":
-            case "Pedestrian_2x":
-            case "Routes_services_chemins_agricoles-2x":
-            case "Zones_30-1x":
-            case "Zones_30-2x":
-                coefficient = 2;
-                break;
+                case "chaucidou":
+                case "Cheminements_cyclables-1xD":
+                case "Cheminements_cyclables-2x":
+                case "Doubles-sens_cyclables_en_bande-G":
+                case "Limite_a_30-1x":
+                case "Limite_a_30-2x":
+                case "Pedestrian_1x":
+                case "Pedestrian_2x":
+                case "Routes_services_chemins_agricoles-2x":
+                case "Zones_30-1x":
+                case "Zones_30-2x":
+                    coefficient = 2;
+                    break;
 
-            case "Double-sens_cyclables_sans_bande":
-            case "escalier-2x":
-            case "":
-                coefficient = 1;
-                break;
+                case "Double-sens_cyclables_sans_bande":
+                case "escalier-2x":
+                    coefficient = 1;
+                    break;
 
-            case "Pistes_cyclables-1xD":
-            case "Pistes_cyclables-2x":
-            case "Pistes_cyclables-2xD":
-            case "Pistes_cyclables-2xG":
-            case "Pistes_sur_Trottoirs-1x":
-            case "Pistes_sur_Trottoirs-2x":
-            case "Voies_vertes-1x":
-            case "Voies_vertes-2x":
-                coefficient = 5;
-                break;
+                case "Pistes_cyclables-1xD":
+                case "Pistes_cyclables-2x":
+                case "Pistes_cyclables-2xD":
+                case "Pistes_cyclables-2xG":
+                case "Pistes_sur_Trottoirs-1x":
+                case "Pistes_sur_Trottoirs-2x":
+                case "Voies_vertes-1x":
+                case "Voies_vertes-2x":
+                    coefficient = 5;
+                    break;
 
-            default:
-                log.error("Le type d'aménagement n'est pas reconnu");
-                coefficient = Integer.MAX_VALUE;
-                break;
+                default:
+                    log.error("Le type d'aménagement n'est pas reconnu");
+                    coefficient = Integer.MAX_VALUE;
+                    break;
+            }
         }
         return length/coefficient;
     }
@@ -121,6 +126,9 @@ public class GraphDataAccess {
      */
     public Graph populateGraph() {
         Graph graph = new Graph();
+        StopWatch watch = new StopWatch();
+        watch.start();
+        log.info("Début du remplissage de l'objet graphe de Tours...");
 
         // geometry field is cast in geography to have length in meter and not in degree
         // TODO vérifier qu'effectivement c'est initialement rendu en degré
@@ -134,19 +142,19 @@ public class GraphDataAccess {
             Double length = (Double)row.get("st_length");
 
             // checks if nodeStart is already in graph. If not, adds it
-            Integer nodeStart = (Integer) row.get("node_start");
+            int nodeStart = ((Long) row.get("node_start")).intValue();
             if (graph.isNotInGraph(nodeStart)){
                 graph.addNode(nodeStart);
             }
 
             // checks if nodeEnd is already in graph. If not, adds it
-            Integer nodeEnd = (Integer) row.get("node_end");
+            int nodeEnd = ((Long) row.get("node_end")).intValue();
             if (graph.isNotInGraph(nodeEnd)){
                 graph.addNode(nodeEnd);
             }
 
             // populates sections Map
-            graph.addSection(nodeStart, nodeEnd, (Integer) row.get("routelink_id"));
+            graph.addSection(nodeStart, nodeEnd, ((Long) row.get("routelink_id")).intValue());
 
             // converts amenagement string into danger value
             Double danger = getDangerValue((String)row.get("amenagement"), length);
@@ -155,6 +163,9 @@ public class GraphDataAccess {
             graph.getNodes().get(nodeStart).addNeighbour(
                     graph.getNodes().get(nodeEnd), length, danger);
         }
+
+        watch.stop();
+        log.info("Fin du remplissage de l'objet graphe de Tours, effectué en {} secondes", watch.getTotalTimeSeconds());
         return graph;
     }
 }

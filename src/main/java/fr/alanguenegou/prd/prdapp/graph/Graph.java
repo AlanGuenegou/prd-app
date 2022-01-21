@@ -60,7 +60,7 @@ public class Graph {
      * @param nodeEndId id of the node ending the section
      * @param sectionId id of the section
      */
-    public void addSection(Integer nodeStartId, Integer nodeEndId, int sectionId) {
+    public void addSection(int nodeStartId, int nodeEndId, int sectionId) {
         sections.put(sectionId, Pair.with(nodeStartId, nodeEndId));
     }
 

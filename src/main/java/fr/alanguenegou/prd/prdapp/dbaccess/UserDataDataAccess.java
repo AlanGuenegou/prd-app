@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
+import org.springframework.util.StopWatch;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -55,6 +56,9 @@ public class UserDataDataAccess {
      */
     public UserData populateUserData(Graph graph) {
         UserData userData = new UserData();
+        StopWatch watch = new StopWatch();
+        watch.start();
+        log.info("Début du remplissage de l'objet données utilisateur...");
 
         var sql = "SELECT id, routelink_id from traces_splitted_areaid_7 ORDER BY id";
         List<Map<String, Object>> rows = jdbcTemplate.queryForList(sql);
@@ -64,8 +68,8 @@ public class UserDataDataAccess {
         // iterates through all rows of userDataDataSource
         for (Map<String, Object> row : rows) {
 
-            Node startNode = graph.getNodeStartBySection((Integer) row.get("routelink_id"));
-            Node endNode = graph.getNodeEndBySection((Integer) row.get("routelink_id"));
+            Node startNode = graph.getNodeStartBySection(((Long) row.get("routelink_id")).intValue());
+            Node endNode = graph.getNodeEndBySection(((Long) row.get("routelink_id")).intValue());
 
 
             // if we operate on a new trip
@@ -93,6 +97,9 @@ public class UserDataDataAccess {
             }
 
         }
+
+        watch.stop();
+        log.info("Fin du remplissage de l'objet données utilisateur, effectué en {} secondes", watch.getTotalTimeSeconds());
         return userData;
     }
 }
