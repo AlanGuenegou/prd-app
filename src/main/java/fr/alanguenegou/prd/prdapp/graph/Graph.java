@@ -8,21 +8,22 @@ import java.util.*;
 import java.util.Map.Entry;
 
 public class Graph {
+    // TODO vérifier les noms "cost" et "distance" et remettre ça au propre (prioriser "cost" pour quand c'est une CL)
 
     @Getter @Setter
     /*
     convenient mapping for sections : section id -> <node start id, node end id>
      */
-    private HashMap<Integer, Pair<Integer, Integer>> sections = new HashMap<>();
+    private HashMap<Long, Pair<Long, Long>> sections = new HashMap<>();
 
     @Getter @Setter
-    private HashMap<Integer, Node> nodes = new HashMap<>();
+    private HashMap<Long, Node> nodes = new HashMap<>();
 
     /**
      * creates a new node and adds it to the graph
      * @param id id of the new node
      */
-    public void addNode(int id){
+    public void addNode(long id){
         Node node = new Node(id);
         nodes.put(id, node);
     }
@@ -32,7 +33,7 @@ public class Graph {
      * @param id id of the section
      * @return pair of nodes start and end of section
      */
-    public Pair<Integer, Integer> getNodesBySection(int id) {
+    public Pair<Long, Long> getNodesBySection(long id) {
         return sections.get(id);
     }
 
@@ -41,7 +42,7 @@ public class Graph {
      * @param id id of the section
      * @return starting node id of the section
      */
-    public Node getNodeStartBySection(int id) {
+    public Node getNodeStartBySection(long id) {
         return nodes.get(getNodesBySection(id).getValue0());
     }
 
@@ -50,7 +51,7 @@ public class Graph {
      * @param id id of the section
      * @return ending node id of the section
      */
-    public Node getNodeEndBySection(int id) {
+    public Node getNodeEndBySection(long id) {
         return nodes.get(getNodesBySection(id).getValue1());
     }
 
@@ -60,7 +61,7 @@ public class Graph {
      * @param nodeEndId id of the node ending the section
      * @param sectionId id of the section
      */
-    public void addSection(int nodeStartId, int nodeEndId, int sectionId) {
+    public void addSection(long nodeStartId, long nodeEndId, long sectionId) {
         sections.put(sectionId, Pair.with(nodeStartId, nodeEndId));
     }
 
@@ -70,7 +71,7 @@ public class Graph {
      * @param nodeId id of the node
      * @return the node with this id is not in the graph
      */
-    public boolean isNotInGraph(int nodeId){
+    public boolean isNotInGraph(long nodeId){
         return !nodes.containsKey(nodeId);
     }
 
@@ -80,9 +81,9 @@ public class Graph {
      * @param source starting node
      * @param sink ending node
      * @param distanceWeight attributed distance weight in the linear combination (distance, danger)
-     * @return the node list that represents the shortest path from source to sink
+     * @return the node list that represents the shortest path from source to sink and its distance
      */
-    public static List<Node> calculateShortestPathFromSource(Node source, Node sink, int distanceWeight) {
+    public static Pair<List<Node>, Double> calculateShortestPathFromSourceToSink(Node source, Node sink, double distanceWeight) {
         source.setDistance((double) 0);
 
         // creates a node queue unsettledNodes to explore and keeps track of nodes already explored
@@ -128,8 +129,7 @@ public class Graph {
 
         }
         assert adjacentNode != null;
-        return adjacentNode.getShortestPath();
-
+        return Pair.with(adjacentNode.getShortestPath(), adjacentNode.getDistance());
     }
 
     /**
@@ -140,7 +140,7 @@ public class Graph {
      * @param distanceWeight weight of the distance value for the linear combination
      */
     private static void calculateMinimumDistance(Node evaluationNode, Pair<Double, Double> edgeValues,
-                                                 Node sourceNode, int distanceWeight) {
+                                                 Node sourceNode, double distanceWeight) {
         Double sourceDistance = sourceNode.getDistance();
 
         // linear combination of security value and distance with a distanceWeight weight on distance
@@ -177,6 +177,37 @@ public class Graph {
         return lowestDistanceNode;
     }
 
-    // TODO fonction qui lance le calcul shortest path pour plusieurs CL
-    //  et renvoie des résultats sous une forme analysable
+    /**
+     * computes the labels (distance, danger) of a shortest-path, for multiple linear combination weights
+     * @param source starting node of the path request
+     * @param sink ending node of the path request
+     * @return hashmap containing the distance and danger values for 7 linear combinations
+     */
+    public HashMap<Double, Pair<Double, Double>> calculateLabelsForManyLinearCombinations(Node source, Node sink) {
+        double[] distanceWeights = {0, 0.2, 0.4, 0.5, 0.6, 0.8, 1};
+        HashMap<Double, Pair<Double, Double>> labels = new HashMap<>(7);
+        for (double distanceWeight: distanceWeights) {
+            double cost = calculateShortestPathFromSourceToSink(source, sink, distanceWeight).getValue1();
+            labels.put(distanceWeight, Pair.with(distanceWeight*cost, (1-distanceWeight)*cost));
+        }
+        return labels;
+    }
+
+    // TODO dev un moyen de supprimer les noeuds inutiles :
+    //  écrire une méthode qui relie les données utilisateur et le graph, et supprimer les noeuds dans le graph et les trips
+    /**
+      * prints the number of nodes in the graph that only have one predecessor and one successor
+      */
+    public void printNumberOfNodesHavingOnePredecessorAndSuccessor() {
+        long numberOfNodes = 0;
+        for (Node node : nodes.values()) {
+            if (node.getPredecessorNumber() == 1 && node.getAdjacentNodes().size() == 1) numberOfNodes++;
+        }
+        System.out.println("-----------------------------------------------------------------");
+        System.out.println("Analyse du nombre de noeuds \"inutiles\" dans l'objet graphe rempli :");
+        System.out.print("Il y a " + numberOfNodes + " noeuds possédant un seul prédécesseur et un seul successeur, " +
+                "sur un total de " + nodes.size() + " noeuds dans le graphe de Tours.");
+        System.out.format(" Soit %.2f%% des noeuds\n", numberOfNodes/(double)nodes.size()*100);
+        System.out.println("-----------------------------------------------------------------");
+    }
 }

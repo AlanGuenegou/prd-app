@@ -63,43 +63,48 @@ public class UserDataDataAccess {
         var sql = "SELECT id, routelink_id from traces_splitted_areaid_7 ORDER BY id";
         List<Map<String, Object>> rows = jdbcTemplate.queryForList(sql);
 
-        int tempId = 0;
+        int tempTripId = 0;
+        long numberOfTrips = 0;
 
         // iterates through all rows of userDataDataSource
         for (Map<String, Object> row : rows) {
 
-            Node startNode = graph.getNodeStartBySection(((Long) row.get("routelink_id")).intValue());
-            Node endNode = graph.getNodeEndBySection(((Long) row.get("routelink_id")).intValue());
+            Node startNode = graph.getNodeStartBySection(((Long) row.get("routelink_id")));
+            Node endNode = graph.getNodeEndBySection(((Long) row.get("routelink_id")));
 
 
             // if we operate on a new trip
-            if ((int) row.get("id") != tempId) {
+            if ((int) row.get("id") != tempTripId) {
+
+                numberOfTrips++;
 
                 // updates trip id to the new one
-                tempId = (int) row.get("id");
+                tempTripId = (int) row.get("id");
 
                 // creates new trip and adds it to userData
                 List<Node> trip = new LinkedList<>();
-                userData.addTrip(tempId, trip);
+                userData.addTrip(tempTripId, trip);
 
             }
 
             // here operating on actual trip row
 
             // checks if start node is already in trip. If not, adds it
-            if (userData.isNotInTrip(tempId, startNode)){
-                userData.addNodeToTrip(tempId, startNode);
+            if (userData.isNotInTrip(tempTripId, startNode)){
+                userData.addNodeToTrip(tempTripId, startNode);
             }
 
             // checks if end node is already in trip. If not, adds it
-            if (userData.isNotInTrip(tempId, endNode)){
-                userData.addNodeToTrip(tempId, endNode);
+            if (userData.isNotInTrip(tempTripId, endNode)){
+                userData.addNodeToTrip(tempTripId, endNode);
             }
 
         }
 
         watch.stop();
-        log.info("Fin du remplissage de l'objet données utilisateur, effectué en {} secondes", watch.getTotalTimeSeconds());
+        log.info("     Fin du remplissage de l'objet données utilisateur, effectué en {} secondes", watch.getTotalTimeSeconds());
+        log.info("     Itération faite sur {} lignes", rows.size());
+        log.info("     {} trajets ont été créés", numberOfTrips);
         return userData;
     }
 }

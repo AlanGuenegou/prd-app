@@ -23,6 +23,8 @@ public class PrdappApplication {
         UserDataDataAccess userDataDataAccess = new UserDataDataAccess();
         UserData userData = userDataDataAccess.populateUserData(graph);
 
+        graph.printNumberOfNodesHavingOnePredecessorAndSuccessor();
+
     }
 
 }

@@ -8,7 +8,10 @@ import java.util.*;
 public class Node {
 
     @Getter @Setter
-    private int id;
+    private long predecessorNumber = 0;
+
+    @Getter @Setter
+    private long id;
 
     @Getter @Setter
     private List<Node> shortestPath = new LinkedList<>();
@@ -37,7 +40,14 @@ public class Node {
      * constructor of a node with a specific id
      * @param id id of the new node
      */
-    public Node(int id) {
+    public Node(long id) {
         this.id = id;
+    }
+
+    /**
+     * increments the predecessor number of a node
+     */
+    public void incrementPredecessorNumber() {
+        predecessorNumber++;
     }
 }

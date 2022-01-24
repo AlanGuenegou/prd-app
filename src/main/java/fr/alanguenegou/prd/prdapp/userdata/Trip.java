@@ -39,7 +39,7 @@ public class Trip {
 
     /**
      * gets the distance and danger label of the trip
-     * @return the distance and danger label a the trip
+     * @return the distance and danger label of the trip
      */
     public Pair<Double, Double> getTripValues() {
         double totalDistance = 0;

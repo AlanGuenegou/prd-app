@@ -136,28 +136,33 @@ public class GraphDataAccess {
         var sql = "SELECT *, st_length(geometry::geography) FROM link_geometry_areaid_7_amenagement";
         List<Map<String, Object>> rows = jdbcTemplate.queryForList(sql);
 
+        int numberOfNodes = 0; // number of nodes created
         // iterates through all rows of graphDataSource
         for (Map<String, Object> row : rows) {
-
             Double length = (Double)row.get("st_length");
 
             // checks if nodeStart is already in graph. If not, adds it
-            int nodeStart = ((Long) row.get("node_start")).intValue();
+            long nodeStart = ((Long) row.get("node_start"));
             if (graph.isNotInGraph(nodeStart)){
+                numberOfNodes++;
                 graph.addNode(nodeStart);
             }
 
             // checks if nodeEnd is already in graph. If not, adds it
-            int nodeEnd = ((Long) row.get("node_end")).intValue();
+            long nodeEnd = ((Long) row.get("node_end"));
             if (graph.isNotInGraph(nodeEnd)){
+                numberOfNodes++;
                 graph.addNode(nodeEnd);
             }
 
             // populates sections Map
-            graph.addSection(nodeStart, nodeEnd, ((Long) row.get("routelink_id")).intValue());
+            graph.addSection(nodeStart, nodeEnd, ((Long) row.get("routelink_id")));
 
             // converts amenagement string into danger value
             Double danger = getDangerValue((String)row.get("amenagement"), length);
+
+            // increments the predecessor number of nodeEnd, to keep track of predecessor numbers of nodes
+            graph.getNodes().get(nodeEnd).incrementPredecessorNumber();
 
             // adds NodeEnd as nodeStart neighbour with proper distance and danger
             graph.getNodes().get(nodeStart).addNeighbour(
@@ -165,7 +170,9 @@ public class GraphDataAccess {
         }
 
         watch.stop();
-        log.info("Fin du remplissage de l'objet graphe de Tours, effectué en {} secondes", watch.getTotalTimeSeconds());
+        log.info("     Fin du remplissage de l'objet graphe de Tours, effectué en {} secondes", watch.getTotalTimeSeconds());
+        log.info("     Itération faite sur {} lignes", rows.size());
+        log.info("     {} noeuds ont été créés", numberOfNodes);
         return graph;
     }
 }

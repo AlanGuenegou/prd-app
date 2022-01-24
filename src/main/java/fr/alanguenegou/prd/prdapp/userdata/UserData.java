@@ -40,4 +40,7 @@ public class UserData {
     public boolean isNotInTrip(int tripId, Node node) {
         return !trips.get(tripId).getTrip().contains(node);
     }
+
+    // TODO fonction qui compare un trip avec la version calculée par la méthode de la classe graph
+    // TODO vérifier comment comparer le front de pareto artificiel avec le label du trip
 }
