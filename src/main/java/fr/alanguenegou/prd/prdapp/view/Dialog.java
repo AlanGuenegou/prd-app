@@ -5,7 +5,11 @@ import java.util.InputMismatchException;
 import java.util.Scanner;
 
 public class Dialog {
-    public int problemChoice() {
+    /**
+     * dialogs with user to retrieve the problem choice
+     * @return the problem number asked to be solved
+     */
+    public int getProblemChoice() {
         Scanner sc = new Scanner(System.in);
         System.out.println("Veuillez rentrer le numéro du problème dont vous voulez lancer la résolution : ");
         System.out.println("     1 : Les cyclistes de Tours respectent-ils les itinéraires qui leur sont conseillés ?");
@@ -25,14 +29,30 @@ public class Dialog {
                     System.out.println("Lancement de la résolution du problème " + choice + "...");
                     continueInput = false;
                 } else {
-                    System.out.println("Il est nécessaire de rentrer les valeurs 1, 2 ou 3. Veuillez rentrer une valeur à nouveau :");
+                    System.out.println("Il est nécessaire de rentrer les valeurs 1, 2 ou 3. " +
+                            "Veuillez rentrer une valeur à nouveau :");
                     sc.nextLine();
                 }
             } catch (InputMismatchException e) {
-                System.out.println("Il est nécessaire de rentrer les valeurs 1, 2 ou 3. Veuillez rentrer une valeur à nouveau :");
+                System.out.println("Il est nécessaire de rentrer les valeurs 1, 2 ou 3. " +
+                        "Veuillez rentrer une valeur à nouveau :");
                 sc.nextLine();
             }
         } while (continueInput);
         return choice;
+    }
+
+    /**
+     * prints the number of non-valid trips in the user data
+     * @param numberOfNonValidTrips number of non-valid trips in user data
+     * @param numberOfTrips number of trips in user data
+     */
+    public void printNumberOfUserDataNonValidTrips (int numberOfNonValidTrips, int numberOfTrips) {
+        System.out.format("Dans les données utilisateur, on retrouve un total de %d trajets non exploitables " +
+                "car non conformes à la topologie du graphe de Tours (déplacement d'un noeud à un autre " +
+                "alors qu'ils ne sont pas considérés comme voisins%n", numberOfNonValidTrips);
+        System.out.format("Ces trajets non exploitables seront ignorés par la suite, " +
+                "%d trajets seront donc finalement traités (initialement %d)%n%n",
+                numberOfTrips-numberOfNonValidTrips, numberOfTrips);
     }
 }

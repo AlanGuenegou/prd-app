@@ -4,6 +4,7 @@ import fr.alanguenegou.prd.prdapp.graph.Node;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -41,6 +42,43 @@ public class UserData {
         return !trips.get(tripId).getTrip().contains(node);
     }
 
-    // TODO fonction qui compare un trip avec la version calculée par la méthode de la classe graph
-    // TODO vérifier comment comparer le front de pareto artificiel avec le label du trip
+    // TODO fonction qui compare tous les trips avec leur version calculée par la méthode de la classe graph,
+    //  et qui retourne la différence moyenne, minimum, maximum etc...
+    // TODO nécessité de couper le début et la fin du trip pour la comparaison ?? par rapport à ce que disait Mr Sauvanet
+
+
+    // TODO méthode pour checker la validité des trips (supprimer les trips qui sont pas valides)
+
+    /**
+     * checks the validity of every trip by removing the ones that don't "fit" the Tours graph (successor node not in neighbour list)
+     * @return the number of trips that are not valid
+     */
+    public int checkTrips() {
+        int numberOfNonValidTrips = 0;
+        List<Integer> tripsToRemove = new ArrayList<>();
+
+        // iterates through every trip
+        for (Trip trip : trips.values()) {
+
+            int tripSize = trip.getTrip().size();
+
+            // checks if every node of the trip is in the neighbour list of the previous one
+            for (int i = 0; i < tripSize-1; i++) {
+
+                // if not, keeps the trip in memory
+                if(!trip.getTrip().get(i).getAdjacentNodes().containsKey(trip.getTrip().get(i+1))) {
+                    tripsToRemove.add(trip.getId());
+                    numberOfNonValidTrips++;
+                    break;
+                }
+            }
+        }
+
+        // removes non valid trips
+        for (int tripId : tripsToRemove) {
+            trips.remove(tripId);
+        }
+
+        return numberOfNonValidTrips;
+    }
 }

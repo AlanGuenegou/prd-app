@@ -17,10 +17,10 @@ public class Node {
     private List<Node> shortestPath = new LinkedList<>();
 
     /**
-     * distance from source node initialized to infinite positive value
+     * cost from source node initialized to infinite positive value
      */
     @Getter @Setter
-    private Double distance = Double.MAX_VALUE;
+    private Double cost = Double.MAX_VALUE;
 
     @Getter @Setter
     Map<Node, Pair<Double, Double>> adjacentNodes = new HashMap<>();
@@ -34,6 +34,7 @@ public class Node {
     public void addNeighbour(Node destination, Double distance, Double danger) {
         Pair<Double, Double> pair = Pair.with(distance, danger);
         adjacentNodes.put(destination, pair);
+
     }
 
     /**
@@ -49,5 +50,13 @@ public class Node {
      */
     public void incrementPredecessorNumber() {
         predecessorNumber++;
+    }
+
+    /**
+     * resets the cost and path attributes of the node
+     */
+    public void resetDistanceAndPath() {
+        setShortestPath(new LinkedList<>());
+        setCost(Double.MAX_VALUE);
     }
 }

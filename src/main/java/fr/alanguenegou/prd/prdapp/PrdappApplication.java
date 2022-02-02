@@ -1,5 +1,6 @@
 package fr.alanguenegou.prd.prdapp;
 
+import fr.alanguenegou.prd.prdapp.controller.ProblemSolver;
 import fr.alanguenegou.prd.prdapp.dbaccess.GraphDataAccess;
 import fr.alanguenegou.prd.prdapp.dbaccess.UserDataDataAccess;
 import fr.alanguenegou.prd.prdapp.graph.Graph;
@@ -23,7 +24,11 @@ public class PrdappApplication {
         UserDataDataAccess userDataDataAccess = new UserDataDataAccess();
         UserData userData = userDataDataAccess.populateUserData(graph);
 
-        graph.printNumberOfNodesHavingOnePredecessorAndSuccessor();
+        // creates a problem solver instance that controls the app dialog
+        ProblemSolver problemSolver = new ProblemSolver(graph, userData);
+        problemSolver.launchProblemSolving();
+
+        //graph.printNumberOfNodesHavingOnePredecessorAndSuccessor();
 
     }
 
