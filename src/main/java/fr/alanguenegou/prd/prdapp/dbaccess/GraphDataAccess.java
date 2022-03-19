@@ -2,7 +2,10 @@ package fr.alanguenegou.prd.prdapp.dbaccess;
 
 
 
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
 import fr.alanguenegou.prd.prdapp.graph.Graph;
+import org.javatuples.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -49,12 +52,12 @@ public class GraphDataAccess {
     }
 
     /**
-     * computes danger value from layout type and section length
+     * computes security value from layout type and section length
      * @param layout layout type of the section
      * @param length length of the section
-     * @return danger value
+     * @return security value
      */
-    public Double getDangerValue(String layout, Double length) {
+    public Double getSecurityValue(String layout, Double length) {
         int coefficient;
         if (layout == null) {
             coefficient = 1;
@@ -117,7 +120,9 @@ public class GraphDataAccess {
                     break;
             }
         }
-        return length/coefficient;
+        // TODO vérifier multiplier ou diviser ?? (voir excel)
+        //  et valeur de security ou danger du coup ??
+        return length / coefficient;
     }
 
     /**
@@ -156,15 +161,18 @@ public class GraphDataAccess {
             }
 
             // populates sections Map
-            graph.addSection(nodeStart, nodeEnd, ((Long) row.get("routelink_id")));
+            long routelinkId = (Long) row.get("routelink_id");
+            Pair<Long, Long> nodePair = Pair.with(nodeStart, nodeEnd);
+            graph.addSection(routelinkId, nodePair);
+
 
             // converts amenagement string into danger value
-            Double danger = getDangerValue((String)row.get("amenagement"), length);
+            Double danger = getSecurityValue((String)row.get("amenagement"), length);
 
-            // increments the predecessor number of nodeEnd, to keep track of predecessor numbers of nodes
-            graph.getNodes().get(nodeEnd).incrementPredecessorNumber();
+            // adds nodeStart to nodeEnd's predecessor list
+            graph.getNodes().get(nodeEnd).addPredecessorNode(nodeStart);
 
-            // adds NodeEnd as nodeStart neighbour with proper distance and danger
+            // adds nodeEnd to nodeStart's neighbours with proper distance and danger
             graph.getNodes().get(nodeStart).addNeighbour(
                     graph.getNodes().get(nodeEnd), length, danger);
         }
@@ -174,5 +182,33 @@ public class GraphDataAccess {
         log.info("     Itération faite sur {} lignes", rows.size());
         log.info("     {} noeuds ont été créés", numberOfNodes);
         return graph;
+    }
+
+    /**
+     * retrieves distance between two sections
+      * @param firstSectionId first section
+     * @param secondSectionId second section
+     * @return distance between the first section and the second section
+     */
+    public double retrieveDistanceBetweenTwoSections(Long firstSectionId, Long secondSectionId) {
+        // TODO attention ! faire attention aux noms de tronçon qui peuvent correspondre à des rues dans des villes voisines ?? vérifier si il y a des cas qui ont vraiment des problèmes
+        //  comme vu avec M. Neron
+
+        var sql = "SELECT st_distancesphere(st_pointn(geometry, st_npoints(geometry) / 2),\n" +
+                "                           st_pointn((SELECT geometry\n" +
+                "                                      FROM link_geometry_areaid_7_amenagement\n" +
+                "                                      WHERE routelink_id = " + firstSectionId + "),\n" +
+                "                              st_npoints((SELECT geometry\n" +
+                "                                          FROM link_geometry_areaid_7_amenagement\n" +
+                "                                          WHERE routelink_id = " + firstSectionId + ")) / 2))\n" +
+                "FROM link_geometry_areaid_7_amenagement WHERE routelink_id = " + secondSectionId;
+
+        Double value = jdbcTemplate.queryForObject(sql, Double.class);
+        if (value != null)
+            return value;
+        else {
+            log.error("null pointer quand mesure de distance entre sections {} et {}", firstSectionId, secondSectionId);
+            return Double.MAX_VALUE;
+        }
     }
 }

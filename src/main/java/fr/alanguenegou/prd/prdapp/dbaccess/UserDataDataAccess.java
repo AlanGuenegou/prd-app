@@ -2,6 +2,7 @@ package fr.alanguenegou.prd.prdapp.dbaccess;
 
 import fr.alanguenegou.prd.prdapp.graph.Graph;
 import fr.alanguenegou.prd.prdapp.graph.Node;
+import fr.alanguenegou.prd.prdapp.userdata.Trip;
 import fr.alanguenegou.prd.prdapp.userdata.UserData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,6 +10,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.util.StopWatch;
 
+import java.sql.Array;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -63,15 +66,27 @@ public class UserDataDataAccess {
         var sql = "SELECT id, routelink_id from traces_splitted_areaid_7 ORDER BY id";
         List<Map<String, Object>> rows = jdbcTemplate.queryForList(sql);
 
+
+        int numberOfUnknownSections = 0;
+        ArrayList<Long> unkownSections = new ArrayList<>();
         int tempTripId = 0;
         long numberOfTrips = 0;
 
         // iterates through all rows of userDataDataSource
         for (Map<String, Object> row : rows) {
 
-            Node startNode = graph.getNodeStartBySection(((Long) row.get("routelink_id")));
-            Node endNode = graph.getNodeEndBySection(((Long) row.get("routelink_id")));
+            Long routelinkId = (Long) row.get("routelink_id");
 
+            // checks if all sections in user data are known in Tours data graph
+            /*
+            if (!graph.getSections().keySet().contains(routelinkId) && !unkownSections.contains(routelinkId)) {
+                unkownSections.add(routelinkId);
+                numberOfUnknownSections++;
+            }
+            */
+
+            Node startNode = graph.getNodeStartBySection(routelinkId);
+            Node endNode = graph.getNodeEndBySection(routelinkId);
 
             // if we operate on a new trip
             if ((int) row.get("id") != tempTripId) {
@@ -105,6 +120,9 @@ public class UserDataDataAccess {
         log.info("     Fin du remplissage de l'objet données utilisateur, effectué en {} secondes", watch.getTotalTimeSeconds());
         log.info("     Itération faite sur {} lignes", rows.size());
         log.info("     {} trajets ont été créés", numberOfTrips);
+
+        //log.warn("     Attention : {} section(s) présente(s) dans les données utilisateur semblent non présentes dans le graph de Tours modélisé", numberOfUnknownSections);
+
         return userData;
     }
 }

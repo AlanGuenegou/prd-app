@@ -8,7 +8,7 @@ import java.util.*;
 public class Node {
 
     @Getter @Setter
-    private long predecessorNumber = 0;
+    private ArrayList<Long> predecessorNodes = new ArrayList<>();
 
     @Getter @Setter
     private long id;
@@ -34,7 +34,6 @@ public class Node {
     public void addNeighbour(Node destination, Double distance, Double danger) {
         Pair<Double, Double> pair = Pair.with(distance, danger);
         adjacentNodes.put(destination, pair);
-
     }
 
     /**
@@ -46,10 +45,11 @@ public class Node {
     }
 
     /**
-     * increments the predecessor number of a node
+     * adds the id of a predecessor node to this node
+     * @param nodeId predecessor node id
      */
-    public void incrementPredecessorNumber() {
-        predecessorNumber++;
+    public void addPredecessorNode(long nodeId) {
+        predecessorNodes.add(nodeId);
     }
 
     /**
@@ -58,5 +58,15 @@ public class Node {
     public void resetDistanceAndPath() {
         setShortestPath(new LinkedList<>());
         setCost(Double.MAX_VALUE);
+    }
+
+    public void modifySectionSecurityValue(long neighbourNodeId, double newSecurityValue) {
+        // TODO à écrire
+
+
+        // passer d'un Pair pour qualifier une section à un Triple avec un "alternate security value", de base initialisé à null
+        // si alternate security value != null, alors on prend cette value comme valeur de security à la place de l'autre (penser à multiplier le facteur security par la distance)
+        // --> penser à faire la transition Pair -> Triple dans tout le code source
+        // utiliser un code binaire 0 1 pour préciser à la méthode de calcul du plus court chemin si on utilise la valeur de base ou celle alternative ??
     }
 }

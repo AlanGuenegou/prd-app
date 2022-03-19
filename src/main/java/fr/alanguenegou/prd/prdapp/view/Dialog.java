@@ -47,12 +47,19 @@ public class Dialog {
      * @param numberOfNonValidTrips number of non-valid trips in user data
      * @param numberOfTrips number of trips in user data
      */
-    public void printNumberOfUserDataNonValidTrips (int numberOfNonValidTrips, int numberOfTrips) {
+    public void printNumberOfUserDataNonValidTrips (int numberOfNonValidTrips, int numberOfProblematicNodesAtExtremities, int numberOfTrips, int extreminitiesNodeNumber) {
         System.out.format("Dans les données utilisateur, on retrouve un total de %d trajets non exploitables " +
-                "car non conformes à la topologie du graphe de Tours (déplacement d'un noeud à un autre " +
-                "alors qu'ils ne sont pas considérés comme voisins%n", numberOfNonValidTrips);
+                "car non conformes à la topologie du graphe de Tours%n(déplacement d'un noeud à un autre " +
+                "alors qu'ils ne sont pas considérés comme voisins)%n%n", numberOfNonValidTrips);
+        System.out.format("%d de ces %d trajets non exploitables ont une défaillance provenant (au moins) des %d premiers noeuds ou %d derniers%n",
+                numberOfProblematicNodesAtExtremities, numberOfNonValidTrips, extreminitiesNodeNumber, extreminitiesNodeNumber);
         System.out.format("Ces trajets non exploitables seront ignorés par la suite, " +
                 "%d trajets seront donc finalement traités (initialement %d)%n%n",
                 numberOfTrips-numberOfNonValidTrips, numberOfTrips);
+    }
+
+    public void printTripsSizeStats(int tripsWithEightOrLessNodes, int tripsWithNineToTwentyNodes) {
+        System.out.format("%d trajets contiennent un total de 8 noeuds ou moins%n" +
+                "%d trajets contiennent entre 9 et 20 noeuds%n%n", tripsWithEightOrLessNodes, tripsWithNineToTwentyNodes);
     }
 }

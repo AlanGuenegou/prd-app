@@ -16,6 +16,9 @@ public class Trip {
     @Getter @Setter
     private List<Node> trip = new LinkedList<>();
 
+    @Getter @Setter
+    private Pair<Double, Double> deducedWeightsValues;
+
     /**
      * constructor of a trip
      * @param id id of the new trip
@@ -34,7 +37,6 @@ public class Trip {
         trip.add(node);
     }
 
-    // TODO vérifier que la méthode getTripValues fonctionne
 
     /**
      * gets the distance and danger label of the trip
@@ -45,8 +47,8 @@ public class Trip {
         double totalDanger = 0;
 
         // for each node in the trip, gets the values of the section between the node and the next one in the trip
-        int tripSize = trip.size();
-        for (int i = 0; i < tripSize-1; i++) {
+        for (int i = 0; i < trip.size()-1; i++) {
+
             totalDistance += trip.get(i).getAdjacentNodes().get(trip.get(i+1)).getValue0();
             totalDanger += trip.get(i).getAdjacentNodes().get(trip.get(i+1)).getValue1();
         }
@@ -71,34 +73,76 @@ public class Trip {
     }
 
 
-    // TODO vérifier que la méthode fonctionne et que la stratégie de calcul est bonne
     /**
      * compares a real user trip with its calculated version
      * @param graph the graph in which the trip is located
-     * @return the difference (in percentage/100) between a real user trip and its calculated version
+     * @return the percent variation from the closest label in pareto front to the real user trip label
      */
     public Double compareTripWithCalculatedVersion(Graph graph) {
         Pair<Double, Double> tripValues = getTripValues();
         Node startNode = getStartNode();
         Node endNode = getEndNode();
 
+        // HashMap<DistanceWeight, Pair<DistanceValue, SecurityValue>>
         HashMap<Double, Pair<Double, Double>> calculatedLabels = graph.calculateLabelsForManyLinearCombinations(startNode, endNode);
 
-        List<Double> computedDifferences = new ArrayList<>();
+        // computedDifferences is Hashmap<computedDifference, distanceWeight>
+        HashMap<Double, Double> computedDifferences = new HashMap<>();
 
-        Set<Double> keySet = calculatedLabels.keySet();
-        for (Double key : keySet) {
-            Double calculatedDistance = calculatedLabels.get(key).getValue0();
-            Double calculatedDanger = calculatedLabels.get(key).getValue1();
+        Set<Double> distanceWeights = calculatedLabels.keySet();
 
-            Double computedDistanceDifference = Math.abs(calculatedDistance / tripValues.getValue0() - 1);
-            Double computedDangerDifference = Math.abs(calculatedDanger / tripValues.getValue1() - 1);
+        for (Double distanceWeight : distanceWeights) {
+            Double calculatedDistance = calculatedLabels.get(distanceWeight).getValue0();
+            Double calculatedSecurity = calculatedLabels.get(distanceWeight).getValue1();
 
+            /*
+            Double calculatedTripScore = distanceWeight * calculatedDistance + (1-distanceWeight) * calculatedSecurity;
+            Double userTripScore = distanceWeight * tripValues.getValue0() + (1-distanceWeight) * tripValues.getValue1();
 
-            // computes difference (percentage/100) between calculated label and real trip values
-            computedDifferences.add((computedDangerDifference+computedDistanceDifference)/2);
+            // we assume there will be only one instance of this comparison value within the hashmap computedDifferences ?
+            Double comparison = Math.abs(userTripScore / calculatedTripScore - 1);
+            */
+
+            // use of euclidean distance
+            Double userTripToCalculatedLabelEuclideanDistance = Math.sqrt(
+                    Math.pow(calculatedDistance - tripValues.getValue0(), 2)
+                    + Math.pow(calculatedSecurity - tripValues.getValue1(), 2)
+            );
+
+            computedDifferences.put(userTripToCalculatedLabelEuclideanDistance, distanceWeight);
         }
 
-        return Collections.min(computedDifferences);
+        // determine the closest label (of pareto front) to real user trip
+        Double lengthFromClosestLabel = Collections.min(computedDifferences.keySet());
+
+        /*
+        we deduced the distance weight that had been used in this trip, so we can set the deducedWeightsValues attribute of the trip
+         */
+        Double deducedTripDistanceWeight = computedDifferences.get(lengthFromClosestLabel);
+        setDeducedWeightsValues(Pair.with(deducedTripDistanceWeight, 1-deducedTripDistanceWeight));
+
+        /*
+        following part is about computing the percent variation from the closest label to the user trip label
+        we normalize the coordinate system with the extreme linear combinations labels (1,0) and (0,1).
+         */
+        double closestLabelDistance = calculatedLabels
+                .get(computedDifferences.get(lengthFromClosestLabel))
+                .getValue0();
+
+        double closestLabelSecurity = calculatedLabels
+                .get(computedDifferences.get(lengthFromClosestLabel))
+                .getValue1();
+
+        double tripDistanceWeight = getDeducedWeightsValues().getValue0();
+        double tripSecurityWeight = getDeducedWeightsValues().getValue1();
+
+        double userCost = tripDistanceWeight * tripValues.getValue0() / calculatedLabels.get(1.0).getValue0()
+                + tripSecurityWeight * tripValues.getValue1() / calculatedLabels.get(0.0).getValue1();
+
+        double closestLabelCost = tripDistanceWeight * closestLabelDistance / calculatedLabels.get(1.0).getValue0()
+                + tripSecurityWeight * closestLabelSecurity / calculatedLabels.get(0.0).getValue1();
+
+
+        return (userCost - closestLabelCost) / closestLabelCost * 100;
     }
 }

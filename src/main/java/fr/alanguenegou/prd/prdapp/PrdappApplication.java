@@ -19,7 +19,6 @@ public class PrdappApplication {
         GraphDataAccess graphDataAccess = new GraphDataAccess();
         Graph graph = graphDataAccess.populateGraph();
 
-
         // connects to UserDataDataSource and populates the userData object
         UserDataDataAccess userDataDataAccess = new UserDataDataAccess();
         UserData userData = userDataDataAccess.populateUserData(graph);
@@ -27,8 +26,6 @@ public class PrdappApplication {
         // creates a problem solver instance that controls the app dialog
         ProblemSolver problemSolver = new ProblemSolver(graph, userData);
         problemSolver.launchProblemSolving();
-
-        //graph.printNumberOfNodesHavingOnePredecessorAndSuccessor();
 
     }
 
