@@ -10,7 +10,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.util.StopWatch;
 
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -23,7 +22,7 @@ import java.util.Map;
 public class UserDataDataAccess {
 
     /**
-     * A logger instance to log infos in the console
+     * A logger instance to log infos into the console
      */
     private final static Logger log = LoggerFactory.getLogger(GraphDataAccess.class);
 
@@ -32,8 +31,10 @@ public class UserDataDataAccess {
      */
     private final JdbcTemplate jdbcTemplate;
 
+
     /**
      * The class constructor with database connexion
+     * (database parameters must be adapted to the local datasource setup)
      */
     public UserDataDataAccess() {
         DriverManagerDataSource ds = new DriverManagerDataSource();
@@ -43,6 +44,7 @@ public class UserDataDataAccess {
         ds.setPassword("password");
         this.jdbcTemplate = new JdbcTemplate(ds);
     }
+
 
     /**
      * Prints the number of rows in the user data database
@@ -60,6 +62,7 @@ public class UserDataDataAccess {
         }
     }
 
+
     /**
      * Populates the UserData instance according to the user data database
      * @param graph The {@link Graph} instance where to find sections details of Tours
@@ -75,8 +78,6 @@ public class UserDataDataAccess {
         List<Map<String, Object>> rows = jdbcTemplate.queryForList(sql);
 
 
-        int numberOfUnknownSections = 0;
-        ArrayList<Long> unkownSections = new ArrayList<>();
         int tempTripId = 0;
         long numberOfTrips = 0;
 
@@ -84,14 +85,6 @@ public class UserDataDataAccess {
         for (Map<String, Object> row : rows) {
 
             Long routelinkId = (Long) row.get("routelink_id");
-
-            // checks if all sections in user data are known in Tours data graph
-            /*
-            if (!graph.getSections().keySet().contains(routelinkId) && !unkownSections.contains(routelinkId)) {
-                unkownSections.add(routelinkId);
-                numberOfUnknownSections++;
-            }
-            */
 
             Node startNode = graph.getNodeStartBySection(routelinkId);
             Node endNode = graph.getNodeEndBySection(routelinkId);
@@ -110,7 +103,9 @@ public class UserDataDataAccess {
 
             }
 
-            // here operating on actual trip row
+            /*
+            here operating on actual trip row
+             */
 
             // checks if start node is already in trip. If not, adds it
             if (userData.isNotInTrip(tempTripId, startNode)){
@@ -131,8 +126,6 @@ public class UserDataDataAccess {
         log.info("     Fin du remplissage de l'objet données utilisateur, effectué en {} secondes", watch.getTotalTimeSeconds());
         log.info("     Itération faite sur {} lignes", rows.size());
         log.info("     {} trajets ont été créés", numberOfTrips);
-
-        //log.warn("     Attention : {} section(s) présente(s) dans les données utilisateur semblent non présentes dans le graph de Tours modélisé", numberOfUnknownSections);
 
         return userData;
     }

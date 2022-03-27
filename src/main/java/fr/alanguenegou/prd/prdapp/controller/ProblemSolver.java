@@ -49,6 +49,7 @@ public class ProblemSolver {
     @Getter @Setter
     private Dialog dialog = new Dialog();
 
+
     /**
      * The class constructor
      * @param graph The {@link Graph} instance that is going to be used
@@ -72,11 +73,9 @@ public class ProblemSolver {
         int[] distribution = new int[11];
         int profileIterator = 0;
 
+        // for each trip in the user data, we compute the difference between the real trip path
+        // and its computed version calculated by the shortest-path algorithm
         for (Trip trip : trips) {
-
-            if (trip.getId() == 6094924) {}
-
-            // TODO méthode compare trip qui fonctionne mal --> ça vient du calcul du plus court chemin ou de la méthode en elle même ?
             double difference = trip.compareTripWithCalculatedVersion(graph);
             globalDifference += difference;
             profileIterator++;
@@ -142,19 +141,15 @@ public class ProblemSolver {
      * Solves the second problem of this research and development work
      */
     private void solveSecondProblem() {
-        // TODO trouver comment gérer la modification d'un graph --> système boolean pour calcul shortest path
-        //  --> 1 = initial secu value et 2 = alternative security value (if exists)
-        //  IMPLEMENTED --> à confirmer
 
         // keeps track of the progress of the numerous iterations
         int profileIterator;
 
-        /*
         // finds arbitrarily a section to modify
+        /*
         Long[] sectionToModify = getMostTakenSection();
         log.info("Un section importante à modifier pourrait être... ");
         dialog.printSectionInformation(sectionToModify[0], sectionToModify[1], graph, userData.getTrips().size());
-
          */
 
 
@@ -165,7 +160,6 @@ public class ProblemSolver {
         graph.modifyGraph(sectionsToModify);
 
 
-
         int nbOfModifiedTrips = 0;
         double globalImprovement = 0;
 
@@ -173,7 +167,8 @@ public class ProblemSolver {
 
         /*
 
-        Récupérer tous les trajets proches du tronçon modifié c'est OK avec le code ci dessous mis en commentaire, mais c'est trop long pour pas grand chose
+        Récupérer tous les trajets proches du tronçon modifié c'est OK avec le code ci dessous mis en commentaire,
+        mais c'est trop lourd et long pour pas grand chose car ce sont de grosses requêtes envoyées à la base de données
 
          */
         /*
@@ -197,16 +192,14 @@ public class ProblemSolver {
             }
 
         }
-
          */
-
 
         profileIterator = 0;
         log.info("Début de la phase de calculs...");
         for (Trip trip : involvedTrips) {
             profileIterator++;
 
-            // computes the initial pareto front and also deduce the weights used for the edge values of the trip
+            // computes the initial pareto front and also deduces the weights used for the edge values of the trip
             HashMap<Double, Pair<Double, Double>> initialParetoFront = trip.setTripWeightsThanksToComparison(graph);
 
             graph.prepareNewCalculation();
@@ -312,12 +305,6 @@ public class ProblemSolver {
                 log.info("{}% -> {} trajets ont été traités jusqu'à présent sur un total de {}",
                         Math.round(((double)profileIterator)/involvedTrips.size()*100), profileIterator, involvedTrips.size());
             }
-
-            /*
-            PROBLEME DE CETTE RESOLUTION : on part du principe que le trajet calculé correspond à celui véritablement emprunté par l'utilisateur...
-             */
-
-
         }
 
         globalImprovement = globalImprovement / nbOfModifiedTrips;
@@ -330,12 +317,9 @@ public class ProblemSolver {
         System.out.println();
         System.out.println("-----------------------------------------------------------------");
 
-
-
     }
 
 
-    // TODO changer le mot SECU VERS DANGER PARTOUT !
     /**
      * Launches the resolution of the problem that user chose to solve
      */
@@ -360,18 +344,20 @@ public class ProblemSolver {
                 break;
             case 3:
                 // solveThirdProblem();
+                System.out.println("\n\nAttention : la résolution du 3ème problème de ce projet de recherche et développement n'est pas implémentée");
                 break;
         }
     }
+
 
     /**
      * Iterates through all user data and finds the most taken section in Tours graph
      * @return The ID of the most taken section and its frequency
      */
     public Long[] getMostTakenSection() {
+
         // TODO réécrire la fonction getMostTakenSection pour vérifier que la section renvoyée n'a pas déjà un ratio 5 en sécurité
         //  + getMostTakenSection() récupère potentiellement section très courte ? atm : distance = 7  pour la most taken section
-
 
 
         // populates a map linking each section of Tours graph to its frequency of use in user data
@@ -399,5 +385,4 @@ public class ProblemSolver {
 
         return null;
     }
-
 }

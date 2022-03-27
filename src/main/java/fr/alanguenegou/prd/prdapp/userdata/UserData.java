@@ -67,7 +67,7 @@ public class UserData {
     //  enlever le début et la fin des trips avant analyse ?
     /**
      * Checks the validity of every trip in {@link UserData#trips} by removing the ones that don't technically fit the Tours graph (successor node not in neighbour list)
-     * @return the number of trips that are not valid
+     * @return The number of trips that are not valid
      */
     public int[] checkTrips() {
         int numberOfNonValidTrips = 0;
@@ -90,12 +90,9 @@ public class UserData {
 
                     // TODO résoudre problème trip valides
                     // 3679 sur 38216 trajets non exploitables ont ont une défaillance sur les 2 premiers noeuds ou les 2 derniers
-                    // 10000 sur 38k " " 4 premiers et 4 derniers
-                    // 15k " " " sur 6 1ers et 6 derniers
                     ArrayList<Integer> tab = new ArrayList<>(Arrays.asList(1, 2, 3, 4, 5, 6, tripSize - 1, tripSize - 2, tripSize - 3, tripSize - 4, tripSize-5, tripSize-6));
 
                     if (tab.contains(i)) numberOfProblematicNodesAtExtremities++;
-
 
                     break;
                 }
@@ -106,8 +103,6 @@ public class UserData {
         for (int tripId : tripsToRemove) {
             trips.remove(tripId);
         }
-
-
 
         return new int[] {numberOfNonValidTrips, numberOfProblematicNodesAtExtremities, 6};
     }
@@ -164,7 +159,5 @@ public class UserData {
         System.out.println("Les trajets ayant une longueur inférieure à " + threshold + " mètres sont considérés non pertinents pour analyse " +
                 "et sont donc supprimés avant traitement des données utilisateur :");
         System.out.println("Finalement, " + trips.size() + " trajets seront traités par la suite \n");
-
-
     }
 }

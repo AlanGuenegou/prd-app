@@ -38,7 +38,7 @@ public class Node {
 
     /**
      * The adjacent nodes of this node.
-     * Mapping for the direct successors : {Node, Triplet{distance, security, alternate security value}}
+     * Mapping for the direct successors : {Node, Triplet{distance, danger, alternate danger value}}
      */
     @Getter @Setter
     Map<Node, Triplet<Double, Double, Double>> adjacentNodes = new HashMap<>();
@@ -80,11 +80,11 @@ public class Node {
     }
 
     /**
-     * Modifies the security value of the section between this node and a successor
+     * Modifies the danger value of the section between this node and a successor
      * @param neighbourNode The neighbour node
      * @param newSecurityFactor The new security factor based on the factor value of the section layout type
      */
-    public void modifySectionSecurityValue(Node neighbourNode, int newSecurityFactor) {
+    public void modifySectionDangerValue(Node neighbourNode, int newSecurityFactor) {
         Double neighbourDistance = getAdjacentNodes().get(neighbourNode).getValue0();
         getAdjacentNodes().replace(neighbourNode, getAdjacentNodes().get(neighbourNode).setAt2(neighbourDistance / newSecurityFactor));
     }

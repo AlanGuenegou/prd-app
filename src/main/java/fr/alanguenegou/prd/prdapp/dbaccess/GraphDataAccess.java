@@ -20,7 +20,7 @@ import java.util.Map;
 public class GraphDataAccess {
 
     /**
-     * A logger instance to log infos in the console
+     * A logger instance to log infos into the console
      */
     private final static Logger log = LoggerFactory.getLogger(GraphDataAccess.class);
 
@@ -29,8 +29,10 @@ public class GraphDataAccess {
      */
     private final JdbcTemplate jdbcTemplate;
 
+
     /**
      * The class constructor with connexion to graph data source and initialization of a jdbcTemplate
+     * (database parameters must be adapted to the local datasource setup)
      */
     public GraphDataAccess() {
         DriverManagerDataSource ds = new DriverManagerDataSource();
@@ -40,6 +42,7 @@ public class GraphDataAccess {
         ds.setPassword("password");
         this.jdbcTemplate = new JdbcTemplate(ds);
     }
+
 
     /**
      * Prints the number of rows in the graph data source
@@ -58,6 +61,7 @@ public class GraphDataAccess {
         }
 
     }
+
 
     /**
      * Computes the danger value of a specific section
@@ -128,10 +132,9 @@ public class GraphDataAccess {
                     break;
             }
         }
-        // TODO vérifier multiplier ou diviser ?? (voir excel)
-        //  et valeur de security ou danger du coup ??
         return length / coefficient;
     }
+
 
     /**
      * Populates a new {@link Graph} instance according to the graph database
@@ -144,12 +147,11 @@ public class GraphDataAccess {
         log.info("Début du remplissage de l'objet graphe de Tours...");
 
         // geometry field is cast in geography to have length in meter and not in degree
-        // TODO vérifier qu'effectivement c'est initialement rendu en degré
-        //  et j'ai besoin de cast en geography pour avoir des mètres (demander à Mr Sauvanet ?)
         var sql = "SELECT *, st_length(geometry::geography) FROM link_geometry_areaid_7_amenagement";
         List<Map<String, Object>> rows = jdbcTemplate.queryForList(sql);
 
         int numberOfNodes = 0; // number of nodes created
+
         // iterates through all rows of graphDataSource
         for (Map<String, Object> row : rows) {
             Double length = (Double)row.get("st_length");
@@ -173,7 +175,6 @@ public class GraphDataAccess {
             Pair<Long, Long> nodePair = Pair.with(nodeStart, nodeEnd);
             graph.addSection(routelinkId, nodePair);
 
-
             // converts amenagement string into danger value
             Double danger = getDangerValue((String)row.get("amenagement"), length);
 
@@ -192,6 +193,7 @@ public class GraphDataAccess {
         return graph;
     }
 
+
     /**
      * Retrieves the distance between two sections of the Tours graph
       * @param firstSectionId The first section
@@ -199,16 +201,13 @@ public class GraphDataAccess {
      * @return The distance between the first section and the second section
      */
     public double retrieveDistanceBetweenTwoSections(Long firstSectionId, Long secondSectionId) {
-        // TODO attention ! faire attention aux noms de tronçon qui peuvent correspondre à des rues dans des villes voisines ?? vérifier si il y a des cas qui ont vraiment des problèmes
-        //  comme vu avec M. Neron
-
         var sql = "SELECT st_distancesphere(st_pointn(geometry, st_npoints(geometry) / 2),\n" +
                 "                           st_pointn((SELECT geometry\n" +
                 "                                      FROM link_geometry_areaid_7_amenagement\n" +
                 "                                      WHERE routelink_id = " + firstSectionId + "),\n" +
-                "                              st_npoints((SELECT geometry\n" +
+                "                              st_npoints(SELECT geometry\n" +
                 "                                          FROM link_geometry_areaid_7_amenagement\n" +
-                "                                          WHERE routelink_id = " + firstSectionId + ")) / 2))\n" +
+                "                                          WHERE routelink_id = " + firstSectionId + ") / 2))\n" +
                 "FROM link_geometry_areaid_7_amenagement WHERE routelink_id = " + secondSectionId;
 
         Double value = jdbcTemplate.queryForObject(sql, Double.class);

@@ -1,11 +1,8 @@
 package fr.alanguenegou.prd.prdapp.graph;
 
-import fr.alanguenegou.prd.prdapp.controller.ProblemSolver;
 import lombok.Getter;
 import lombok.Setter;
 import org.javatuples.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.Map.Entry;
@@ -17,21 +14,23 @@ import java.util.Map.Entry;
  */
 public class Graph {
 
-    // TODO adapter tout le code avec la constante
     /**
      * Constant giving to the entire app the different distance weights used to compute an artificial Pareto front
      */
     public static final double[] LINEAR_COMBINATION_DISTANCE_WEIGHTS = { 0.001, 0.2, 0.4, 0.5, 0.6, 0.8, 0.999 };
+
 
     /**
      * Constant for pointing out what type of danger value will be used by the shortest path algorithm
      */
     public static final int WITH_ALTERNATIVE_DANGER_VALUE = 1;
 
+
     /**
      * Constant for pointing out what type of danger value will be used by the shortest path algorithm
      */
     public static final int WITH_INITIAL_DANGER_VALUE = 2;
+
 
     /**
      * Convenient mapping for sections : section id -> {node start id, node end id}
@@ -41,7 +40,7 @@ public class Graph {
 
 
     /**
-     * Mapping of nodes modelling a graph
+     * Mapping of nodes modelling this graph
      */
     @Getter @Setter
     private HashMap<Long, Node> nodes = new HashMap<>();
@@ -56,6 +55,7 @@ public class Graph {
         nodes.put(id, node);
     }
 
+
     /**
      * Retrieves a node in this graph by its ID
      * @param id The ID of the node we are looking for
@@ -67,7 +67,7 @@ public class Graph {
 
 
     /**
-     * Gets the IDs of start and end nodes of a specific section
+     * Gets the IDs of start and end nodes of a specific section in this graph
      * @param id The ID of the section
      * @return The pair of nodes start and end of the section
      */
@@ -77,7 +77,7 @@ public class Graph {
 
 
     /**
-     * Gets the start node of a specific section
+     * Gets the start node of a specific section in this graph
      * @param id The ID of the section
      * @return The starting node of the section
      */
@@ -87,7 +87,7 @@ public class Graph {
 
 
     /**
-     * Gets the end node of a specific section
+     * Gets the end node of a specific section in this graph
      * @param id The ID of the section
      * @return The ending node of the section
      */
@@ -109,16 +109,16 @@ public class Graph {
     /**
      * Checks if a specific node is not in {@link Graph#nodes} already
      * @param nodeId The ID of the node
-     * @return True if the node with this ID is not in the graph
+     * @return True if the node with this ID is not in this graph
      */
     public boolean isNotInGraph(long nodeId){
         return !nodes.containsKey(nodeId);
     }
 
 
-    // TODO vérifier que la méthode fonctionne
     /**
-     * Calculates the shortest-path from a source node to a sink node
+     * Calculates the shortest-path from a source node to a sink node in this graph
+     * (based on the Dijkstra algorithm)
      * @param source The starting node
      * @param sink The ending node
      * @param distanceWeight The attributed distance weight in the linear combination (distance, danger)
@@ -160,9 +160,7 @@ public class Graph {
 
                     // if sink just got explored, breaks the two loops and returns the shortest path
                     if (adjacentNode.equals(sink)) {
-
                         adjacentNode.getShortestPath().add(adjacentNode);
-
                         break outer;
                     }
 
@@ -177,6 +175,7 @@ public class Graph {
         return Pair.with(adjacentNode.getShortestPath(), adjacentNode.getCost());
     }
 
+
     /**
      * Compares the actual cost of a path with the newly calculated one while following the newly explored path
      * @param evaluationNode The node that has to be evaluated
@@ -189,8 +188,8 @@ public class Graph {
                                              Node sourceNode, double distanceWeight, int useOfDangerValue) {
         Double sourceCost = sourceNode.getCost();
 
-        // linear combination of security value and distance with a distanceWeight weight on distance
-        // allows us to apply a Dijkstra algorithm
+        // linear combination of danger value and distance with a 'distanceWeight' weight on distance
+        // allows to apply a classic Dijkstra algorithm
         Double edgeCost;
 
         // checks if alternative danger value is used for calculation or not
@@ -200,7 +199,6 @@ public class Graph {
         else {
             edgeCost = distanceWeight*edgeValues.getValue0() + (1-distanceWeight)*edgeValues.getValue1();
         }
-
 
         // compares the actual cost with the newly calculated one while following the newly explored path
         // if it is better, updates its shortestPath
@@ -229,29 +227,26 @@ public class Graph {
             }
         }
         return nodeWithLowestCost;
-    } // OK
+    }
 
 
     /**
-     * Computes the labels (distance, danger) of a shortest-path, for multiple linear combination weights
+     * Computes the labels (distance, danger) of a shortest-path, for numerous linear combination weights
      * @param source The starting node of the path request
      * @param sink The ending node of the path request
      * @param useOfDangerValue A numerical value defining if alternative (= 1) danger value or initial (= 2) one is used for the shortest-path calculation
-     * @return A HashMap containing the distance and security values for 7 linear combinations
+     * @return A HashMap containing the distance and danger values for X linear combinations (see {@link Graph#LINEAR_COMBINATION_DISTANCE_WEIGHTS})
      */
     public HashMap<Double, Pair<Double, Double>> calculateLabelsForManyLinearCombinations(Node source, Node sink, int useOfDangerValue) {
-        // double[] distanceWeights = {0.0, 0.2, 0.4, 0.5, 0.6, 0.8, 1.0};
         HashMap<Double, Pair<Double, Double>> labels = new HashMap<>(LINEAR_COMBINATION_DISTANCE_WEIGHTS.length);
         for (double distanceWeight: LINEAR_COMBINATION_DISTANCE_WEIGHTS) {
             prepareNewCalculation();
             Pair<List<Node>, Double> shortestPath = calculateShortestPathFromSourceToSink(source, sink, distanceWeight, useOfDangerValue);
 
-
-            // debug :
             double totalDistance = 0;
             double totalDanger = 0;
 
-            // for each node in the trip, gets the values of the section between the node and the next one in the trip
+            // for each node in the computed trip, gets the values of the section between the node and the next one
             for (int i = 0; i < shortestPath.getValue0().size()-1; i++) {
                 totalDistance += shortestPath.getValue0().get(i).getAdjacentNodes().get(shortestPath.getValue0().get(i+1)).getValue0();
 
@@ -264,17 +259,7 @@ public class Graph {
                 }
             }
 
-            /*
-            System.out.println("pour le distance weight : " + distanceWeight);
-            System.out.println("     distance totale du shortest-path : " + totalDistance);
-            System.out.println("     danger total du shortest-path    : " + totalDanger);
-
-             */
-
-
-            //labels.put(distanceWeight, Pair.with(distanceWeight*shortestPath.getValue1(), (1-distanceWeight)*shortestPath.getValue1()));
             labels.put(distanceWeight, Pair.with(totalDistance, totalDanger));
-
         }
         return labels;
     }
@@ -299,7 +284,7 @@ public class Graph {
                 // finds following label key
                 double nextDistanceWeight = distanceWeights.get(distanceWeights.indexOf(label.getKey()) + 1);
 
-                // next label values distance, security
+                // next label values distance, danger
                 Pair<Double, Double> nextLabel = Pair.with(labels.get(nextDistanceWeight).getValue0(), labels.get(nextDistanceWeight).getValue1());
 
 
@@ -321,11 +306,11 @@ public class Graph {
 
         // computes distance between extreme labels linear combinations
         Pair<Double, Double> extremeDistanceLabel = labels.get(LINEAR_COMBINATION_DISTANCE_WEIGHTS[6]);
-        Pair<Double, Double> extremeSecurityLabel = labels.get(LINEAR_COMBINATION_DISTANCE_WEIGHTS[0]);
+        Pair<Double, Double> extremeDangerLabel = labels.get(LINEAR_COMBINATION_DISTANCE_WEIGHTS[0]);
 
 
-        double distanceBetweenBothExtremes = Math.sqrt(Math.pow(extremeDistanceLabel.getValue0() - extremeSecurityLabel.getValue0(), 2) +
-                Math.pow(extremeDistanceLabel.getValue1() - extremeSecurityLabel.getValue1(), 2));
+        double distanceBetweenBothExtremes = Math.sqrt(Math.pow(extremeDistanceLabel.getValue0() - extremeDangerLabel.getValue0(), 2) +
+                Math.pow(extremeDistanceLabel.getValue1() - extremeDangerLabel.getValue1(), 2));
 
         double rapport = longestDistance / (distanceBetweenBothExtremes / (labels.size()-1));
 
@@ -376,8 +361,9 @@ public class Graph {
         }
     }
 
+
     /**
-     * Applies a set of modifications to the security value of some specific nodes of this graph
+     * Applies a set of modifications to the Danger value of some specific nodes of this graph
      * @param modifications A HashMap that contains each section on which we want to apply a modification
      *                      ({section ID, new security factor})
      */
@@ -385,10 +371,9 @@ public class Graph {
         // for each section that has to be modified
         for (Entry<Long, Integer> modification : modifications.entrySet()) {
 
-            // modifies its security value
-            getNodeStartBySection(modification.getKey()).modifySectionSecurityValue(getNodeEndBySection(modification.getKey()), modification.getValue());
+            // modifies its danger value
+            getNodeStartBySection(modification.getKey()).modifySectionDangerValue(getNodeEndBySection(modification.getKey()), modification.getValue());
         }
     }
-
 
 }

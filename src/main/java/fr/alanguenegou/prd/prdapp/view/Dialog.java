@@ -54,6 +54,7 @@ public class Dialog {
         return choice;
     }
 
+
     /**
      * Prints the amount of non-valid trips in the regular UserData instance
      * @param numberOfNonValidTrips The amount of non-valid trips
@@ -71,9 +72,14 @@ public class Dialog {
                 numberOfTrips-numberOfNonValidTrips, numberOfTrips);
     }
 
+
     /**
+     *
      * Prints the distance and danger values of a specific section
      * @param sectionId The ID of the section
+     * @param frequency The number of times the section is present in user data
+     * @param graph The Tours graph instance
+     * @param userDataSize The size of the user data (= the nomber of trips)
      */
     public void printSectionInformation(long sectionId, long frequency, Graph graph, int userDataSize) {
         Logger log = LoggerFactory.getLogger(Graph.class);

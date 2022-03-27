@@ -36,10 +36,11 @@ public class Trip {
     private LinkedList<Node> trip = new LinkedList<>();
 
     /**
-     * A pair of numerical values that represents the weights of security and danger for this particular user trip
+     * A pair of numerical values that represents the weights of danger and danger for this particular user trip
      */
     @Getter @Setter
     private Pair<Double, Double> deducedWeightsValues;
+
 
     /**
      * The class constructor
@@ -63,7 +64,7 @@ public class Trip {
 
     /**
      * Computes the distance and danger values of this entire trip
-     * @return the distance and danger values
+     * @return The distance and danger values
      */
     public Pair<Double, Double> getTripValues() {
         double totalDistance = 0;
@@ -78,6 +79,7 @@ public class Trip {
         return Pair.with(totalDistance, totalDanger);
     }
 
+
     /**
      * Gets the starting node of this trip
      * @return The starting node
@@ -85,6 +87,7 @@ public class Trip {
     public Node getStartNode() {
         return trip.get(0);
     }
+
 
     /**
      * Gets the ending node of this trip
@@ -103,7 +106,7 @@ public class Trip {
     public Double compareTripWithCalculatedVersion(Graph graph) {
         Pair<Double, Double> tripValues = getTripValues();
 
-        // HashMap<DistanceWeight, Pair<DistanceValue, SecurityValue>>
+        // HashMap<DistanceWeight, Pair<DistanceValue, DangerValue>>
         HashMap<Double, Pair<Double, Double>> calculatedLabels = graph.calculateLabelsForManyLinearCombinations(getStartNode(), getEndNode(), Graph.WITH_INITIAL_DANGER_VALUE);
 
 
@@ -113,12 +116,12 @@ public class Trip {
         // iterates through every label of the artificial pareto front
         for (Map.Entry<Double, Pair<Double, Double>> calculatedLabel : calculatedLabels.entrySet()) {
             Double calculatedDistance = calculatedLabel.getValue().getValue0();
-            Double calculatedSecurity = calculatedLabel.getValue().getValue1();
+            Double calculatedDanger = calculatedLabel.getValue().getValue1();
 
             // use of euclidean distance
             Double userTripToCalculatedLabelEuclideanDistance = Math.sqrt(
                     Math.pow(calculatedDistance - tripValues.getValue0(), 2)
-                            + Math.pow(calculatedSecurity - tripValues.getValue1(), 2));
+                            + Math.pow(calculatedDanger - tripValues.getValue1(), 2));
 
             computedDifferences.put(userTripToCalculatedLabelEuclideanDistance, calculatedLabel.getKey());
         }
@@ -141,18 +144,18 @@ public class Trip {
                 .get(computedDifferences.get(lengthFromClosestLabel))
                 .getValue0();
 
-        double closestLabelSecurity = calculatedLabels
+        double closestLabelDanger = calculatedLabels
                 .get(computedDifferences.get(lengthFromClosestLabel))
                 .getValue1();
 
         double tripDistanceWeight = getDeducedWeightsValues().getValue0();
-        double tripSecurityWeight = getDeducedWeightsValues().getValue1();
+        double tripDangerWeight = getDeducedWeightsValues().getValue1();
 
         double userCost = tripDistanceWeight * tripValues.getValue0() / calculatedLabels.get(Graph.LINEAR_COMBINATION_DISTANCE_WEIGHTS[6]).getValue0()
-                + tripSecurityWeight * tripValues.getValue1() / calculatedLabels.get(Graph.LINEAR_COMBINATION_DISTANCE_WEIGHTS[0]).getValue1();
+                + tripDangerWeight * tripValues.getValue1() / calculatedLabels.get(Graph.LINEAR_COMBINATION_DISTANCE_WEIGHTS[0]).getValue1();
 
         double closestLabelCost = tripDistanceWeight * closestLabelDistance / calculatedLabels.get(Graph.LINEAR_COMBINATION_DISTANCE_WEIGHTS[6]).getValue0()
-                + tripSecurityWeight * closestLabelSecurity / calculatedLabels.get(Graph.LINEAR_COMBINATION_DISTANCE_WEIGHTS[0]).getValue1();
+                + tripDangerWeight * closestLabelDanger / calculatedLabels.get(Graph.LINEAR_COMBINATION_DISTANCE_WEIGHTS[0]).getValue1();
 
 
         return (userCost - closestLabelCost) / closestLabelCost * 100;
@@ -160,14 +163,14 @@ public class Trip {
 
 
     /**
-     * Deduces the distance and security weights chosen by the user who did this trip and sets the proper values of this trip
+     * Deduces the distance and danger weights chosen by the user who did this trip and sets the proper values of this trip
      * @param graph The Tours graph instance
      * @return The HashMap containing the artificial pareto front of the trip shortest-path computation
      */
     public HashMap<Double, Pair<Double, Double>> setTripWeightsThanksToComparison(Graph graph) {
         Pair<Double, Double> tripValues = getTripValues();
 
-        // HashMap<DistanceWeight, Pair<DistanceValue, SecurityValue>>
+        // HashMap<DistanceWeight, Pair<DistanceValue, DangerValue>>
         HashMap<Double, Pair<Double, Double>> calculatedLabels = graph.calculateLabelsForManyLinearCombinations(getStartNode(), getEndNode(), Graph.WITH_INITIAL_DANGER_VALUE);
 
         // computedDifferences is Hashmap<computedDifference, distanceWeight>
@@ -176,12 +179,12 @@ public class Trip {
         // iterates through every label of the artificial pareto front
         for (Map.Entry<Double, Pair<Double, Double>> calculatedLabel : calculatedLabels.entrySet()) {
             Double calculatedDistance = calculatedLabel.getValue().getValue0();
-            Double calculatedSecurity = calculatedLabel.getValue().getValue1();
+            Double calculatedDanger = calculatedLabel.getValue().getValue1();
 
             // use of euclidean distance
             Double userTripToCalculatedLabelEuclideanDistance = Math.sqrt(
                     Math.pow(calculatedDistance - tripValues.getValue0(), 2)
-                    + Math.pow(calculatedSecurity - tripValues.getValue1(), 2));
+                    + Math.pow(calculatedDanger - tripValues.getValue1(), 2));
 
             computedDifferences.put(userTripToCalculatedLabelEuclideanDistance, calculatedLabel.getKey());
         }

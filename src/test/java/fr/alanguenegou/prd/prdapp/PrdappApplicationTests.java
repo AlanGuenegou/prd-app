@@ -12,12 +12,9 @@ class PrdappApplicationTests {
     void contextLoads() {
     }
 
-
-    // TODO écrire méthode de test pour vérifier le bon calcul du shortest path
-    //  --> tester sur un petit graphe fait à la main (20aine de noeuds)
-    //  --> utiliser l'exemple sur le tuto suivi sur internet (baeldung)
     @Test
     void checkShortestPathCalculation(Graph graph, UserData userData) {
-
+        // TODO écrire méthode de test pour vérifier le bon calcul du shortest path
+        //  --> tester sur un petit graphe fait à la main (20aine de noeuds)
     }
 }
