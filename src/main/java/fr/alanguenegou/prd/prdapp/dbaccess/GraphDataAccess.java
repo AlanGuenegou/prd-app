@@ -1,9 +1,6 @@
 package fr.alanguenegou.prd.prdapp.dbaccess;
 
 
-
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
 import fr.alanguenegou.prd.prdapp.graph.Graph;
 import org.javatuples.Pair;
 import org.slf4j.Logger;
@@ -15,14 +12,25 @@ import org.springframework.util.StopWatch;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * The class managing the Graph database access used to populate a {@link Graph} instance
+ * @author GUENEGOU A.
+ * @version 1.00
+ */
 public class GraphDataAccess {
 
+    /**
+     * A logger instance to log infos in the console
+     */
     private final static Logger log = LoggerFactory.getLogger(GraphDataAccess.class);
 
+    /**
+     * An instance of a JdbcTemplate used to connect to a database
+     */
     private final JdbcTemplate jdbcTemplate;
 
     /**
-     * constructor of GraphDataAccess witch connexion to graph data source and initialization of a jdbcTemplate
+     * The class constructor with connexion to graph data source and initialization of a jdbcTemplate
      */
     public GraphDataAccess() {
         DriverManagerDataSource ds = new DriverManagerDataSource();
@@ -34,7 +42,7 @@ public class GraphDataAccess {
     }
 
     /**
-     * prints number of rows in the graph data source
+     * Prints the number of rows in the graph data source
      */
     public void printNumOfRows() {
 
@@ -52,12 +60,12 @@ public class GraphDataAccess {
     }
 
     /**
-     * computes security value from layout type and section length
-     * @param layout layout type of the section
-     * @param length length of the section
-     * @return security value
+     * Computes the danger value of a specific section
+     * @param layout The layout type of the section
+     * @param length The length of the section
+     * @return The danger value
      */
-    public Double getSecurityValue(String layout, Double length) {
+    public Double getDangerValue(String layout, Double length) {
         int coefficient;
         if (layout == null) {
             coefficient = 1;
@@ -126,8 +134,8 @@ public class GraphDataAccess {
     }
 
     /**
-     * populates a new graph object according to graphDataSource
-     * @return the graph freshly populated
+     * Populates a new {@link Graph} instance according to the graph database
+     * @return The populated Graph instance
      */
     public Graph populateGraph() {
         Graph graph = new Graph();
@@ -167,7 +175,7 @@ public class GraphDataAccess {
 
 
             // converts amenagement string into danger value
-            Double danger = getSecurityValue((String)row.get("amenagement"), length);
+            Double danger = getDangerValue((String)row.get("amenagement"), length);
 
             // adds nodeStart to nodeEnd's predecessor list
             graph.getNodes().get(nodeEnd).addPredecessorNode(nodeStart);
@@ -185,10 +193,10 @@ public class GraphDataAccess {
     }
 
     /**
-     * retrieves distance between two sections
-      * @param firstSectionId first section
-     * @param secondSectionId second section
-     * @return distance between the first section and the second section
+     * Retrieves the distance between two sections of the Tours graph
+      * @param firstSectionId The first section
+     * @param secondSectionId The second section
+     * @return The distance between the first section and the second section
      */
     public double retrieveDistanceBetweenTwoSections(Long firstSectionId, Long secondSectionId) {
         // TODO attention ! faire attention aux noms de tronçon qui peuvent correspondre à des rues dans des villes voisines ?? vérifier si il y a des cas qui ont vraiment des problèmes

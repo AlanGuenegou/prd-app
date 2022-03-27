@@ -9,9 +9,18 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 
+/**
+ * The launcher of this application
+ * @author GUENEGOU A.
+ * @version 1.00
+ */
 @SpringBootApplication(exclude = DataSourceAutoConfiguration.class)
 public class PrdappApplication {
 
+    /**
+     * The classic main method launching the app
+     * @param args null
+     */
     public static void main(String[] args) {
         SpringApplication.run(PrdappApplication.class, args);
 
@@ -24,9 +33,8 @@ public class PrdappApplication {
         UserData userData = userDataDataAccess.populateUserData(graph);
 
         // creates a problem solver instance that controls the app dialog
-        ProblemSolver problemSolver = new ProblemSolver(graph, userData);
+        ProblemSolver problemSolver = new ProblemSolver(graph, userData, graphDataAccess);
         problemSolver.launchProblemSolving();
 
     }
-
 }

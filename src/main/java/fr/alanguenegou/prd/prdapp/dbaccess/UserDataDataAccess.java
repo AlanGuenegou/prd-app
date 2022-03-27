@@ -2,7 +2,7 @@ package fr.alanguenegou.prd.prdapp.dbaccess;
 
 import fr.alanguenegou.prd.prdapp.graph.Graph;
 import fr.alanguenegou.prd.prdapp.graph.Node;
-import fr.alanguenegou.prd.prdapp.userdata.Trip;
+
 import fr.alanguenegou.prd.prdapp.userdata.UserData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,20 +10,30 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.util.StopWatch;
 
-import java.sql.Array;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * The class managing the user data database access used to populate a {@link UserData} instance
+ * @author GUENEGOU A.
+ * @version 1.00
+ */
 public class UserDataDataAccess {
 
+    /**
+     * A logger instance to log infos in the console
+     */
     private final static Logger log = LoggerFactory.getLogger(GraphDataAccess.class);
 
+    /**
+     * An instance of a JdbcTemplate used to connect to a database
+     */
     private final JdbcTemplate jdbcTemplate;
 
     /**
-     * constructor of a userDataDataAccess with database connexion
+     * The class constructor with database connexion
      */
     public UserDataDataAccess() {
         DriverManagerDataSource ds = new DriverManagerDataSource();
@@ -35,10 +45,9 @@ public class UserDataDataAccess {
     }
 
     /**
-     * prints number of rows in the userData data source
+     * Prints the number of rows in the user data database
      */
     public void printNumOfRows() {
-
         var sql = "SELECT COUNT(*) FROM traces_splitted_areaid_7";
         try {
             Integer numOfRows = jdbcTemplate.queryForObject(sql, Integer.class);
@@ -49,13 +58,12 @@ public class UserDataDataAccess {
             System.out.println("La connexion à la base de données du graphe a échoué :");
             nullPointerException.printStackTrace();
         }
-
     }
 
     /**
-     * populates the userData object according to userData data source
-     * @param graph the graph object where to find sections details of Tours
-     * @return the userData object freshly populated
+     * Populates the UserData instance according to the user data database
+     * @param graph The {@link Graph} instance where to find sections details of Tours
+     * @return The populated UserData instance
      */
     public UserData populateUserData(Graph graph) {
         UserData userData = new UserData();
@@ -97,7 +105,7 @@ public class UserDataDataAccess {
                 tempTripId = (int) row.get("id");
 
                 // creates new trip and adds it to userData
-                List<Node> trip = new LinkedList<>();
+                LinkedList<Node> trip = new LinkedList<>();
                 userData.addTrip(tempTripId, trip);
 
             }
@@ -113,6 +121,9 @@ public class UserDataDataAccess {
             if (userData.isNotInTrip(tempTripId, endNode)){
                 userData.addNodeToTrip(tempTripId, endNode);
             }
+
+            // adds the routelink to the trip to keep track of all sections composing a trip
+            userData.addSectionToTrip(tempTripId, routelinkId);
 
         }
 

@@ -5,68 +5,87 @@ import lombok.Setter;
 import org.javatuples.*;
 import java.util.*;
 
+/**
+ * The class modelling a node in a graph
+ * @author GUENEGOU A.
+ * @version 1.00
+ */
 public class Node {
 
+    /**
+     * A list listing all the direct predecessors of this node
+     */
     @Getter @Setter
     private ArrayList<Long> predecessorNodes = new ArrayList<>();
 
+    /**
+     * The ID of this node
+     */
     @Getter @Setter
     private long id;
 
+    /**
+     * A list of nodes representing the computed shortest-path from a source node to this node (computation is done during some method calls)
+     */
     @Getter @Setter
     private List<Node> shortestPath = new LinkedList<>();
 
     /**
-     * cost from source node initialized to infinite positive value
+     * The cost from a source node to this node (arbitrarily initialized to infinite positive value)
      */
     @Getter @Setter
     private Double cost = Double.MAX_VALUE;
 
+    /**
+     * The adjacent nodes of this node.
+     * Mapping for the direct successors : {Node, Triplet{distance, security, alternate security value}}
+     */
     @Getter @Setter
-    Map<Node, Pair<Double, Double>> adjacentNodes = new HashMap<>();
+    Map<Node, Triplet<Double, Double, Double>> adjacentNodes = new HashMap<>();
+
 
     /**
-     * adds a neighbour node to this node
-     * @param destination neighbour node
-     * @param distance distance from this node to the neighbour node
-     * @param danger danger value on the section between this node and the neighbour node
+     * Adds a neighbor to this node
+     * @param destination The neighbour node
+     * @param distance    The distance from this node to the neighbor node
+     * @param danger      The danger value on the section between this node and the neighbour node
      */
     public void addNeighbour(Node destination, Double distance, Double danger) {
-        Pair<Double, Double> pair = Pair.with(distance, danger);
-        adjacentNodes.put(destination, pair);
+        Triplet<Double, Double, Double> triplet = Triplet.with(distance, danger, null);
+        adjacentNodes.put(destination, triplet);
     }
 
     /**
-     * constructor of a node with a specific id
-     * @param id id of the new node
+     * The class constructor with a specific node ID
+     * @param id The ID of the new node
      */
     public Node(long id) {
         this.id = id;
     }
 
     /**
-     * adds the id of a predecessor node to this node
-     * @param nodeId predecessor node id
+     * Adds the ID of a predecessor to this node
+     * @param nodeId The predecessor ID
      */
     public void addPredecessorNode(long nodeId) {
         predecessorNodes.add(nodeId);
     }
 
     /**
-     * resets the cost and path attributes of the node
+     * Resets the cost and path attributes of this node
      */
     public void resetDistanceAndPath() {
         setShortestPath(new LinkedList<>());
         setCost(Double.MAX_VALUE);
     }
 
-    public void modifySectionSecurityValue(long neighbourNodeId, double newSecurityValue) {
-        // TODO à écrire
-
-
-        // passer d'un Pair pour qualifier une section à un Triple avec un "alternate security value", de base initialisé à null
-        // si alternate security value != null, alors on prend cette value comme valeur de security à la place de l'autre (penser à multiplier le facteur security par la distance)
-        // --> penser à faire la transition Pair -> Triple dans tout le code source
-        // utiliser un code binaire 0 1 pour préciser à la méthode de calcul du plus court chemin si on utilise la valeur de base ou celle alternative ??
+    /**
+     * Modifies the security value of the section between this node and a successor
+     * @param neighbourNode The neighbour node
+     * @param newSecurityFactor The new security factor based on the factor value of the section layout type
+     */
+    public void modifySectionSecurityValue(Node neighbourNode, int newSecurityFactor) {
+        Double neighbourDistance = getAdjacentNodes().get(neighbourNode).getValue0();
+        getAdjacentNodes().replace(neighbourNode, getAdjacentNodes().get(neighbourNode).setAt2(neighbourDistance / newSecurityFactor));
     }
 }
