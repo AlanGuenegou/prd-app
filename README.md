@@ -12,8 +12,11 @@ their danger values.
 
 The user data analysed comes from some satellite navigation software dedicated to cycling data from users in Tours, France.
 
-
+>***
+>
 > :warning: **This is not a standalone app in its current state in this repository since it is mostly based on two particular databases which are confidential, hence unavailable for public usage.** 
+>  
+>***
 
 ## Technologies
 ***
