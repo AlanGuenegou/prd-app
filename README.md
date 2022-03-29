@@ -10,7 +10,7 @@ It is also about predicting potential cost improvements in real user
 trips based on some hypothetical section modifications  leading to the lowering of
 their danger values.
 
-The user data analysed comes from some satellite navigation software dedicated to cycling data from users in Tours, France.
+The analysed user data comes from some satellite navigation software dedicated to cycling data from users in Tours, France.
 
 >***
 >
