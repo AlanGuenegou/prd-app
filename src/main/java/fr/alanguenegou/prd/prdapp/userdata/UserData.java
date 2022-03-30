@@ -63,6 +63,35 @@ public class UserData {
     }
 
 
+    /**
+     * Remove the X first and last steps of every trips in this UserData
+     * @param numberOfNodes The number of steps that are removed from start and end of trips
+     */
+    public void removeXNodesFromEachTrip(int numberOfNodes) {
+        ArrayList<Integer> tripsToRemove = new ArrayList<>();
+        for (int i = 0; i < numberOfNodes; i++) {
+            for (Trip trip : trips.values()) {
+
+                if (trip.getTrip().size() > numberOfNodes*2) {
+                    trip.getTrip().removeFirst();
+                    trip.getTrip().removeLast();
+                    trip.getSections().removeFirst();
+                    trip.getSections().removeLast();
+                }
+                else {
+                    tripsToRemove.add(trip.getId());
+                }
+
+            }
+        }
+
+        for (int tripId : tripsToRemove) {
+            trips.remove(tripId);
+        }
+    }
+
+
+
     // TODO vérifier quand est-ce que les problèmes dans les trips arrivent (début ? fin ? milieu / random ?) :
     //  enlever le début et la fin des trips avant analyse ?
     /**

@@ -110,6 +110,7 @@ public class Trip {
         HashMap<Double, Pair<Double, Double>> calculatedLabels = graph.calculateLabelsForManyLinearCombinations(getStartNode(), getEndNode(), Graph.WITH_INITIAL_DANGER_VALUE);
 
 
+
         // computedDifferences is Hashmap<computedDifference, distanceWeight>
         HashMap<Double, Double> computedDifferences = new HashMap<>();
 

@@ -84,6 +84,8 @@ public class ProblemSolver {
                         Math.round(((double)profileIterator)/userData.getTrips().size()*100), profileIterator, userData.getTrips().size());
             }
 
+            // analyse de la distribution entre 0 et 100% d'écart
+            /*
             // fill distribution array
             if (difference >= 0.0 && difference < 10.0)
                 distribution[0]++;
@@ -107,6 +109,31 @@ public class ProblemSolver {
                 distribution[9]++;
             else
                 distribution[10]++;
+             */
+
+            // fill distribution array
+            if (difference >= 0.0 && difference < 1.0)
+                distribution[0]++;
+            else if (difference >= 1.0 && difference < 2.0)
+                distribution[1]++;
+            else if (difference >= 2.0 && difference < 3.0)
+                distribution[2]++;
+            else if (difference >= 3.0 && difference < 4.0)
+                distribution[3]++;
+            else if (difference >= 4.0 && difference < 5.0)
+                distribution[4]++;
+            else if (difference >= 5.0 && difference < 6.0)
+                distribution[5]++;
+            else if (difference >= 6.0 && difference < 7.0)
+                distribution[6]++;
+            else if (difference >= 7.0 && difference < 8.0)
+                distribution[7]++;
+            else if (difference >= 8.0 && difference < 9.0)
+                distribution[8]++;
+            else if (difference >= 9.0 && difference <= 10.0)
+                distribution[9]++;
+            else
+                distribution[10]++;
 
         }
 
@@ -119,7 +146,8 @@ public class ProblemSolver {
 
 
         System.out.println("\nDétails de la distribution des écarts (bornes en pourcentage) :");
-        System.out.println("[0, 10[   : " + distribution[0]);
+        /*
+        System.out.println("[ 0, 10[   : " + distribution[0]);
         System.out.println("[10, 20[  : " + distribution[1]);
         System.out.println("[20, 30[  : " + distribution[2]);
         System.out.println("[30, 40[  : " + distribution[3]);
@@ -129,6 +157,17 @@ public class ProblemSolver {
         System.out.println("[70, 80[  : " + distribution[7]);
         System.out.println("[80, 90[  : " + distribution[8]);
         System.out.println("[90, 100] : " + distribution[9]);
+         */
+        System.out.println("[0, 1[  : " + distribution[0]);
+        System.out.println("[1, 2[  : " + distribution[1]);
+        System.out.println("[2, 3[  : " + distribution[2]);
+        System.out.println("[3, 4[  : " + distribution[3]);
+        System.out.println("[4, 5[  : " + distribution[4]);
+        System.out.println("[5, 6[  : " + distribution[5]);
+        System.out.println("[6, 7[  : " + distribution[6]);
+        System.out.println("[7, 8[  : " + distribution[7]);
+        System.out.println("[8, 9[  : " + distribution[8]);
+        System.out.println("[9, 10] : " + distribution[9]);
         System.out.println();
         System.out.format("Attention : %d trajets ont un écart supérieur à 100%%%n", distribution[10]);
         System.out.println();
@@ -267,13 +306,31 @@ public class ProblemSolver {
                 // if modified label has seen its value modified (= the graph modification  impacted the path for this linear combination of weights)
                 if (!initialParetoFront.get(distanceWeight).equals(modifiedParetoFront.get(distanceWeight))) {
 
-                    // computes percent variation and adds it in the previous hashmap
-                    // TODO quelle norme utiliser pour orthonormer le calcul ?
-                    double initialLabelCost = distanceWeight * initialParetoFront.get(distanceWeight).getValue0() / ((((1))))
-                            + (1-distanceWeight) * initialParetoFront.get(distanceWeight).getValue1() / ((((1))));
+                    // determines the extreme Pareto front distance value for normalisation
+                    double extremeDistanceLinearCombination = 0;
+                    if (initialParetoFront.get(Graph.LINEAR_COMBINATION_DISTANCE_WEIGHTS[6]).getValue0() < modifiedParetoFront.get(Graph.LINEAR_COMBINATION_DISTANCE_WEIGHTS[6]).getValue0()) {
+                        extremeDistanceLinearCombination = modifiedParetoFront.get(Graph.LINEAR_COMBINATION_DISTANCE_WEIGHTS[6]).getValue0();
+                    }
+                    else {
+                        extremeDistanceLinearCombination = initialParetoFront.get(Graph.LINEAR_COMBINATION_DISTANCE_WEIGHTS[6]).getValue0();
+                    }
 
-                    double newLabelCost = distanceWeight * modifiedParetoFront.get(distanceWeight).getValue0() / ((((1))))
-                            + (1-distanceWeight) * modifiedParetoFront.get(distanceWeight).getValue1() / ((((1))));
+
+                    // determines the extreme Pareto front danger value for normalisation
+                    double extremeDangerLinearCombination = 0;
+                    if (initialParetoFront.get(Graph.LINEAR_COMBINATION_DISTANCE_WEIGHTS[0]).getValue1() < modifiedParetoFront.get(Graph.LINEAR_COMBINATION_DISTANCE_WEIGHTS[0]).getValue1()) {
+                        extremeDangerLinearCombination = modifiedParetoFront.get(Graph.LINEAR_COMBINATION_DISTANCE_WEIGHTS[0]).getValue1();
+                    }
+                    else {
+                        extremeDangerLinearCombination = initialParetoFront.get(Graph.LINEAR_COMBINATION_DISTANCE_WEIGHTS[0]).getValue1();
+                    }
+
+                    // computes percent variation and adds it in the previous hashmap
+                    double initialLabelCost = distanceWeight * initialParetoFront.get(distanceWeight).getValue0() / extremeDistanceLinearCombination
+                            + (1-distanceWeight) * initialParetoFront.get(distanceWeight).getValue1() / extremeDangerLinearCombination;
+
+                    double newLabelCost = distanceWeight * modifiedParetoFront.get(distanceWeight).getValue0() / extremeDistanceLinearCombination
+                            + (1-distanceWeight) * modifiedParetoFront.get(distanceWeight).getValue1() / extremeDangerLinearCombination;
 
 
                     tempModifications.put(distanceWeight, ((newLabelCost - initialLabelCost) / initialLabelCost * 100));
@@ -325,6 +382,23 @@ public class ProblemSolver {
      */
     public void launchProblemSolving() {
         //graph.printNumberOfNodesHavingOnePredecessorAndSuccessor();
+
+
+        /*
+
+
+        2162916
+        4784275
+        852271
+
+        int tripId = 5964006;
+        graph.checkLinearCombinationAmount(
+                graph.calculateLabelsForManyLinearCombinations(userData.getTrips().get(tripId).getStartNode(), userData.getTrips().get(tripId).getEndNode(), 2)
+        );
+        System.out.println(userData.getTrips().get(tripId).getTripValues());
+        System.out.println("écart : " + userData.getTrips().get(tripId).compareTripWithCalculatedVersion(graph));
+*/
+
 
         System.out.println("------------------------- FILTRAGE DES DONNEES UTILISATEUR N°1 ------------------------- \n");
         int initialUserDataSize = userData.getTrips().size();

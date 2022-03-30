@@ -112,7 +112,12 @@ public class Graph {
      * @return True if the node with this ID is not in this graph
      */
     public boolean isNotInGraph(long nodeId){
-        return !nodes.containsKey(nodeId);
+        try {
+            return !nodes.containsKey(nodeId);
+        } catch (NullPointerException exception) {
+            System.out.println("ERROR : l'ID du noeud recherché ne semble pas exister dans ce graphe");
+            throw exception;
+        }
     }
 
 
@@ -261,6 +266,7 @@ public class Graph {
 
             labels.put(distanceWeight, Pair.with(totalDistance, totalDanger));
         }
+
         return labels;
     }
 
@@ -322,6 +328,12 @@ public class Graph {
         }
         else {
             System.out.format("Les écarts entre les CL semblent être raisonnables%n");
+        }
+
+
+        System.out.println("labels --> ");
+        for (Entry<Double, Pair<Double, Double>> label : labels.entrySet()) {
+            System.out.println("distance : " + label.getValue().getValue0() + " et danger : " + label.getValue().getValue1());
         }
     }
 
