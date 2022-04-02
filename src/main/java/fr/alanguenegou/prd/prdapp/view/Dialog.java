@@ -38,6 +38,12 @@ public class Dialog {
             try {
                 choice = sc.nextInt();
                 if (choices.contains(choice)) {
+
+                    if (choice == 3) {
+                        System.out.println("\nAttention : la résolution du 3ème problème de ce projet de recherche et développement n'est pas implémentée, veuillez rentrer la valeur 1 ou 2");
+                        continue;
+                    }
+
                     System.out.println("Lancement de la résolution du problème " + choice + "...");
                     continueInput = false;
                 } else {

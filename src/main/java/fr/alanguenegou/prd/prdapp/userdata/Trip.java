@@ -18,25 +18,24 @@ import java.util.*;
 public class Trip {
 
     /**
-     * The ID of this trip
+     * The ID of this Trip
      */
-    @Getter @Setter
-    private int id;
+    @Getter @Setter private int id;
 
     /**
-     * A list of section IDs that represents this trip in terms of sections (a section is two linked nodes)
+     * A list of section IDs that represents this Trip in terms of sections (a section is two linked nodes)
      */
     @Getter @Setter
     private LinkedList<Long> sections = new LinkedList<>();
 
     /**
-     * A list of nodes that represent this trip in terms of nodes
+     * A list of nodes that represent this Trip in terms of nodes
      */
     @Getter @Setter
     private LinkedList<Node> trip = new LinkedList<>();
 
     /**
-     * A pair of numerical values that represents the weights of danger and danger for this particular user trip
+     * A pair of numerical values that represents the weights of distance and danger for this particular user Trip
      */
     @Getter @Setter
     private Pair<Double, Double> deducedWeightsValues;
@@ -44,8 +43,8 @@ public class Trip {
 
     /**
      * The class constructor
-     * @param id The ID of this new trip
-     * @param trip The list of nodes that constitute this trip
+     * @param id The ID of this new Trip
+     * @param trip The list of nodes that constitute this Trip
      */
     public Trip(int id, LinkedList<Node> trip) {
         this.setId(id);
@@ -54,7 +53,7 @@ public class Trip {
 
 
     /**
-     * Adds a specific node to this trip
+     * Adds a specific node to this Trip
      * @param node The node that has to be added
      */
     public void addNode(Node node){
@@ -63,7 +62,7 @@ public class Trip {
 
 
     /**
-     * Computes the distance and danger values of this entire trip
+     * Computes the distance and danger values of this entire Trip
      * @return The distance and danger values
      */
     public Pair<Double, Double> getTripValues() {
@@ -81,7 +80,7 @@ public class Trip {
 
 
     /**
-     * Gets the starting node of this trip
+     * Gets the starting node of this Trip
      * @return The starting node
      */
     public Node getStartNode() {
@@ -90,7 +89,7 @@ public class Trip {
 
 
     /**
-     * Gets the ending node of this trip
+     * Gets the ending node of this Trip
      * @return The ending node
      */
     public Node getEndNode() {

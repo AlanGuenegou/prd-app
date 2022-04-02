@@ -63,7 +63,6 @@ public class ProblemSolver {
     }
 
 
-    // TODO sortir des stats (histogramme excel) sur la distribution des écarts (0 - 10% - 20% - etc)
     /**
      * Solves the first problem of this research and development work
      */
@@ -146,6 +145,7 @@ public class ProblemSolver {
 
 
         System.out.println("\nDétails de la distribution des écarts (bornes en pourcentage) :");
+        System.out.println("----> se référer aux histogrammes de distribution disponibles dans le rapport de projet");
         /*
         System.out.println("[ 0, 10[   : " + distribution[0]);
         System.out.println("[10, 20[  : " + distribution[1]);
@@ -158,6 +158,7 @@ public class ProblemSolver {
         System.out.println("[80, 90[  : " + distribution[8]);
         System.out.println("[90, 100] : " + distribution[9]);
          */
+        /*
         System.out.println("[0, 1[  : " + distribution[0]);
         System.out.println("[1, 2[  : " + distribution[1]);
         System.out.println("[2, 3[  : " + distribution[2]);
@@ -172,6 +173,8 @@ public class ProblemSolver {
         System.out.format("Attention : %d trajets ont un écart supérieur à 100%%%n", distribution[10]);
         System.out.println();
         System.out.println("-----------------------------------------------------------------");
+
+         */
 
     }
 
@@ -307,7 +310,7 @@ public class ProblemSolver {
                 if (!initialParetoFront.get(distanceWeight).equals(modifiedParetoFront.get(distanceWeight))) {
 
                     // determines the extreme Pareto front distance value for normalisation
-                    double extremeDistanceLinearCombination = 0;
+                    double extremeDistanceLinearCombination;
                     if (initialParetoFront.get(Graph.LINEAR_COMBINATION_DISTANCE_WEIGHTS[6]).getValue0() < modifiedParetoFront.get(Graph.LINEAR_COMBINATION_DISTANCE_WEIGHTS[6]).getValue0()) {
                         extremeDistanceLinearCombination = modifiedParetoFront.get(Graph.LINEAR_COMBINATION_DISTANCE_WEIGHTS[6]).getValue0();
                     }
@@ -317,7 +320,7 @@ public class ProblemSolver {
 
 
                     // determines the extreme Pareto front danger value for normalisation
-                    double extremeDangerLinearCombination = 0;
+                    double extremeDangerLinearCombination;
                     if (initialParetoFront.get(Graph.LINEAR_COMBINATION_DISTANCE_WEIGHTS[0]).getValue1() < modifiedParetoFront.get(Graph.LINEAR_COMBINATION_DISTANCE_WEIGHTS[0]).getValue1()) {
                         extremeDangerLinearCombination = modifiedParetoFront.get(Graph.LINEAR_COMBINATION_DISTANCE_WEIGHTS[0]).getValue1();
                     }
@@ -339,6 +342,8 @@ public class ProblemSolver {
 
                 }
                 else {
+
+                    // marks the modification as useless for this distance weight in order to remove it outside the loop
                     tempModifications.put(distanceWeight, -999.0);
                 }
             }
@@ -355,6 +360,18 @@ public class ProblemSolver {
             if (distanceWeightsNearUserTrip.size() > 0) {
                 nbOfModifiedTrips++;
                 globalImprovement += Collections.min(distanceWeightsNearUserTrip.values());
+
+                /*
+                System.out.println("_________________________________________");
+                System.out.println("modification max : " + Collections.min(distanceWeightsNearUserTrip.values()));
+                System.out.println("initial Pareto front :");
+                System.out.println(initialParetoFront);
+                System.out.println("modified Pareto front :");
+                System.out.println(modifiedParetoFront);
+                System.out.println("_________________________________________");
+
+                 */
+
             }
 
 
@@ -382,22 +399,6 @@ public class ProblemSolver {
      */
     public void launchProblemSolving() {
         //graph.printNumberOfNodesHavingOnePredecessorAndSuccessor();
-
-
-        /*
-
-
-        2162916
-        4784275
-        852271
-
-        int tripId = 5964006;
-        graph.checkLinearCombinationAmount(
-                graph.calculateLabelsForManyLinearCombinations(userData.getTrips().get(tripId).getStartNode(), userData.getTrips().get(tripId).getEndNode(), 2)
-        );
-        System.out.println(userData.getTrips().get(tripId).getTripValues());
-        System.out.println("écart : " + userData.getTrips().get(tripId).compareTripWithCalculatedVersion(graph));
-*/
 
 
         System.out.println("------------------------- FILTRAGE DES DONNEES UTILISATEUR N°1 ------------------------- \n");
@@ -431,7 +432,7 @@ public class ProblemSolver {
     public Long[] getMostTakenSection() {
 
         // TODO réécrire la fonction getMostTakenSection pour vérifier que la section renvoyée n'a pas déjà un ratio 5 en sécurité
-        //  + getMostTakenSection() récupère potentiellement section très courte ? atm : distance = 7  pour la most taken section
+        //  + getMostTakenSection() récupère potentiellement section très courte donc pas intéressante à modifier ?
 
 
         // populates a map linking each section of Tours graph to its frequency of use in user data
